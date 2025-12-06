@@ -21,7 +21,6 @@
     color: var(--text);
     display: flex;
     flex-direction: column;
-    align-items: center;
     min-height: 100vh;
     padding: 20px;
     box-sizing: border-box;
@@ -43,13 +42,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    justify-content: center;
     margin-bottom: 20px;
-    width: 340px;
-    max-width: 95vw;
+    width: 100%;
   }
 
   #searchInput {
-    flex: 1;
+    flex: 0 0 340px;
     padding: 10px 14px;
     border-radius: 8px;
     border: 1px solid #333;
@@ -81,8 +80,8 @@
   #suggestions {
     position: absolute;
     top: 44px;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
@@ -106,41 +105,47 @@
     color: var(--muted);
   }
 
-  .controls {
+  /* Main layout: sidebar + catalog */
+  #main {
     display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+    flex: 1;
+    overflow: hidden;
   }
 
-  .btn, .toggle {
-    background: var(--card);
-    border: 1px solid #333;
-    color: var(--text);
-    padding: 10px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.2s ease;
+  /* Sidebar with idols and categories */
+  #sidebar {
+    display: flex;
+    flex-direction: row;
+    gap: 1px;
+    background: #111;
+    border-right: 1px solid #333;
   }
 
-  .btn:hover, .toggle:hover {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent-hover);
+  #idolButtons, #categoryPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    height: 100vh;
+    overflow-y: auto;
   }
 
-  /* 🧭 Catalog grid */
+  /* Widths for lists */
+  #idolButtons { width: 160px; }
+  #categoryPanel { width: 160px; border-left: 1px solid #333; }
+
+  /* Hide scrollbars */
+  #idolButtons::-webkit-scrollbar, #categoryPanel::-webkit-scrollbar { display: none; }
+  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
+  #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Catalog panel */
   #catalogPanel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
-    width: 100%;
-    max-width: 1280px;
     padding: 10px;
-    margin-top: 10px;
+    flex: 1;
     overflow-y: auto;
   }
 
@@ -158,40 +163,8 @@
     border-color: var(--accent);
   }
 
-  /* 🌸 Idol buttons */
-  #idolButtons {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    overflow: hidden;
-    background: #111;
-    border-right: none;
-    transition: width 0.3s ease;
-    padding: 0;
-    box-sizing: border-box;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  #idolButtons::-webkit-scrollbar { display: none; }
-  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
-
-  #idolButtons.open {
-    width: 200px;
-    padding: 10px;
-    border-right: 1px solid #333;
-    overflow-y: auto;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .idol-btn {
+  /* Buttons */
+  .idol-btn, .category-btn {
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
@@ -201,45 +174,22 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    white-space: nowrap;
   }
 
-  .idol-btn:hover {
+  .idol-btn:hover, .category-btn:hover {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent-hover);
   }
 
-  .idol-btn.active {
+  .idol-btn.active, .category-btn.active {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent);
   }
 
-  .category-btn {
-    background: var(--card);
-    border: 1px solid #333;
-    color: var(--text);
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: left;
-  }
-
-  .category-btn:hover {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent-hover);
-  }
-
-  .category-btn.active {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* 🖤 Overlay like Idol-Shuffler */
+  /* Overlay */
   #overlay {
     position: fixed;
     top: 0;
@@ -270,19 +220,19 @@
   <div id="suggestions" hidden></div>
 </div>
 
-<div class="controls">
-  <div class="toggle" id="catalogToggle"><span id="catalogLabel">Catalog</span></div>
-  <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
+<div id="main">
+  <div id="sidebar">
+    <div id="idolButtons"></div>
+    <div id="categoryPanel"></div>
+  </div>
+  <div id="catalogPanel"></div>
 </div>
-
-<div id="idolButtons"></div>
-<div id="categoryPanel"></div>
-<div id="catalogPanel"></div>
 
 <!-- Overlay -->
 <div id="overlay"></div>
 
 <script>
+// --- JS remains the same ---
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
@@ -296,10 +246,8 @@ const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
 const catalogPanel = document.getElementById("catalogPanel");
-const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
-const categoryToggle = document.getElementById("categoryToggle");
 const overlay = document.getElementById("overlay");
 
 function parseCatalogText(text) {
@@ -311,9 +259,7 @@ function parseCatalogText(text) {
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function getCurrentPool() {
-  return filteredCatalog.length ? filteredCatalog : catalog;
-}
+function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : catalog; }
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
@@ -354,7 +300,6 @@ function selectFolder(folder) {
   if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
   suggestionsEl.hidden = true;
   searchInput.value = folder;
-
   applyFilters();
   renderCatalogThumbnails();
 }
@@ -381,7 +326,6 @@ function renderCatalogThumbnails() {
   });
 }
 
-/* 🎬 Overlay logic from Idol-Shuffler */
 let overlayVisible = false;
 function toggleOverlay(url) {
   if (overlayVisible) {
@@ -390,9 +334,7 @@ function toggleOverlay(url) {
     overlayVisible = false;
     return;
   }
-
   overlay.innerHTML = "";
-
   let media;
   if (url.match(/\.(mp4|webm|mov)$/i)) {
     media = document.createElement("video");
@@ -406,7 +348,6 @@ function toggleOverlay(url) {
     media = document.createElement("img");
     media.src = url;
   }
-
   overlay.appendChild(media);
   overlay.style.display = "flex";
   overlayVisible = true;
@@ -438,7 +379,6 @@ function toggleCatalogIdol(folderName, btn) {
     renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
-
   currentIdolFilter = folderName;
   [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -465,18 +405,14 @@ function toggleCategoryFilter(cat, btn) {
     renderCategoryButtons(categories);
     return;
   }
-
   currentCategoryFilter = cat;
   [...categoryPanel.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   applyFilters();
 }
 
-/* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
-catalogToggle.addEventListener("click", () => { idolButtonsEl.classList.toggle("open"); });
-categoryToggle.addEventListener("click", () => { categoryPanel.classList.toggle("open"); });
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
@@ -484,7 +420,6 @@ document.addEventListener("click", (e) => {
   }
 });
 
-/* Load catalog */
 async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
   const txt1 = await res1.text();
