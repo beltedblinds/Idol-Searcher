@@ -132,11 +132,11 @@
     color: var(--accent-hover);
   }
 
-  /* 🌸 Catalog grid */
+  /* 🧭 Catalog now full-page grid */
   #catalogPanel {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
     width: 100%;
     max-width: 1280px;
     padding: 10px;
@@ -146,8 +146,7 @@
 
   .catalog-thumb {
     width: 100%;
-    aspect-ratio: 16 / 9; /* maintain ratio */
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
     border: 1px solid #333;
@@ -159,7 +158,7 @@
     border-color: var(--accent);
   }
 
-  /* 🌸 Idol buttons */
+  /* 🌸 Idol buttons (left side) */
   #idolButtons {
     position: fixed;
     top: 0;
@@ -240,26 +239,6 @@
     color: var(--accent);
   }
 
-  /* 🌈 Overlay player like Idol-Shuffler */
-  #overlayPlayer {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 90%;
-    max-height: 80%;
-    border-radius: 12px;
-    display: none;
-    z-index: 1000;
-    background: #111;
-  }
-
-  #overlayPlayer video {
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-  }
-
 </style>
 </head>
 <body>
@@ -276,16 +255,17 @@
   <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
 </div>
 
+<!-- 🩷 Idol buttons now floating on left -->
 <div id="idolButtons"></div>
+
+<!-- 🌸 Category panel (slides out beside idol buttons) -->
 <div id="categoryPanel"></div>
+
+<!-- Catalog thumbnails now full-page grid -->
 <div id="catalogPanel"></div>
 
-<!-- Overlay player like Idol-Shuffler -->
-<div id="overlayPlayer">
-  <video id="videoPlayer" controls autoplay></video>
-</div>
-
 <script>
+// 🖼️ + 🎥 Combined sources
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
@@ -295,6 +275,7 @@ let currentIdolFilter = null;
 let currentCategoryFilter = null;
 let categories = [];
 
+/* DOM */
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
@@ -303,9 +284,8 @@ const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
 const categoryToggle = document.getElementById("categoryToggle");
-const overlayPlayer = document.getElementById("overlayPlayer");
-const videoPlayer = document.getElementById("videoPlayer");
 
+/* Parser and functions */
 function parseCatalogText(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   return lines.map(line => {
@@ -358,6 +338,7 @@ function selectFolder(folder) {
   if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
   suggestionsEl.hidden = true;
   searchInput.value = folder;
+
   applyFilters();
   renderCatalogThumbnails();
 }
@@ -379,21 +360,9 @@ function renderCatalogThumbnails() {
     img.src = item.thumb || item.raw || item.url;
     img.className = "catalog-thumb";
     img.title = item.folder;
-    img.onclick = () => showPlayer(item.raw);
     catalogPanel.appendChild(img);
   });
 }
-
-function showPlayer(url) {
-  videoPlayer.src = url;
-  overlayPlayer.style.display = "block";
-}
-
-overlayPlayer.addEventListener("click", () => {
-  videoPlayer.pause();
-  videoPlayer.src = "";
-  overlayPlayer.style.display = "none";
-});
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
@@ -415,6 +384,7 @@ function toggleCatalogIdol(folderName, btn) {
     renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
+
   currentIdolFilter = folderName;
   [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -441,6 +411,7 @@ function toggleCategoryFilter(cat, btn) {
     renderCategoryButtons(categories);
     return;
   }
+
   currentCategoryFilter = cat;
   [...categoryPanel.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -463,13 +434,16 @@ document.addEventListener("click", (e) => {
   }
 });
 
+/* Load catalog */
 async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
   const txt1 = await res1.text();
   const txt2 = await res2.text();
+
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
   categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
+
   renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
   renderCatalogThumbnails();
