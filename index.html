@@ -132,11 +132,11 @@
     color: var(--accent-hover);
   }
 
-  /* 🌟 Catalog thumbnails grid */
+  /* 🌸 Catalog grid */
   #catalogPanel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
+    gap: 14px;
     width: 100%;
     max-width: 1280px;
     padding: 10px;
@@ -146,7 +146,7 @@
 
   .catalog-thumb {
     width: 100%;
-    height: 160px;
+    aspect-ratio: 16 / 9; /* maintain ratio */
     border-radius: 12px;
     cursor: pointer;
     transition: transform 0.2s, border-color 0.2s;
@@ -216,7 +216,6 @@
     color: var(--accent);
   }
 
-  /* 🌸 Category buttons */
   .category-btn {
     background: var(--card);
     border: 1px solid #333;
@@ -241,32 +240,24 @@
     color: var(--accent);
   }
 
-  /* 🌈 Overlay player */
+  /* 🌈 Overlay player like Idol-Shuffler */
   #overlayPlayer {
     position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 80%;
+    border-radius: 12px;
+    display: none;
     z-index: 1000;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.2s;
+    background: #111;
   }
 
   #overlayPlayer video {
-    max-width: 90%;
-    max-height: 90%;
+    width: 100%;
+    height: 100%;
     border-radius: 12px;
-  }
-
-  #overlayPlayer.show {
-    visibility: visible;
-    opacity: 1;
   }
 
 </style>
@@ -289,9 +280,9 @@
 <div id="categoryPanel"></div>
 <div id="catalogPanel"></div>
 
-<!-- Overlay player -->
+<!-- Overlay player like Idol-Shuffler -->
 <div id="overlayPlayer">
-  <video id="videoPlayer" controls></video>
+  <video id="videoPlayer" controls autoplay></video>
 </div>
 
 <script>
@@ -367,7 +358,6 @@ function selectFolder(folder) {
   if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
   suggestionsEl.hidden = true;
   searchInput.value = folder;
-
   applyFilters();
   renderCatalogThumbnails();
 }
@@ -396,13 +386,13 @@ function renderCatalogThumbnails() {
 
 function showPlayer(url) {
   videoPlayer.src = url;
-  overlayPlayer.classList.add("show");
+  overlayPlayer.style.display = "block";
 }
 
 overlayPlayer.addEventListener("click", () => {
   videoPlayer.pause();
   videoPlayer.src = "";
-  overlayPlayer.classList.remove("show");
+  overlayPlayer.style.display = "none";
 });
 
 function renderIdolButtons(list = null) {
@@ -425,7 +415,6 @@ function toggleCatalogIdol(folderName, btn) {
     renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
-
   currentIdolFilter = folderName;
   [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -452,13 +441,13 @@ function toggleCategoryFilter(cat, btn) {
     renderCategoryButtons(categories);
     return;
   }
-
   currentCategoryFilter = cat;
   [...categoryPanel.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   applyFilters();
 }
 
+/* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
 catalogToggle.addEventListener("click", () => {
@@ -478,11 +467,9 @@ async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
   const txt1 = await res1.text();
   const txt2 = await res2.text();
-
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
   categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
-
   renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
   renderCatalogThumbnails();
