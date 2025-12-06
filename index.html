@@ -103,12 +103,12 @@
     color: var(--muted);
   }
 
-  /* 🩷 Idol buttons panel (left) */
+  /* 🩷 Idol Buttons Panel (left) */
   #idolButtons {
     position: fixed;
     top: 0;
     left: 0;
-    width: 200px;
+    width: 200px;           /* always open */
     height: 100%;
     padding: 10px;
     overflow-y: auto;
@@ -118,14 +118,15 @@
     background: #111;
     border-right: 1px solid #333;
     z-index: 999;
+    box-sizing: border-box;
   }
-
-  /* 🧭 Category panel (next to idols) */
+  
+  /* 🧭 Category Panel (next to idols) */
   #categoryPanel {
     position: fixed;
     top: 0;
-    left: 200px;
-    width: 160px;
+    left: 200px;            /* immediately right of idol buttons */
+    width: 160px;           /* always open */
     height: 100%;
     padding: 10px;
     overflow-y: auto;
@@ -135,7 +136,9 @@
     background: #111;
     border-right: 1px solid #333;
     z-index: 998;
+    box-sizing: border-box;
   }
+
 
   /* Hide scrollbars */
   #idolButtons::-webkit-scrollbar,
@@ -145,14 +148,19 @@
 
   /* Catalog panel */
   #catalogPanel {
+    position: fixed;
+    top: 0;
+    left: 360px;            /* 200 + 160 = 360px offset */
+    right: 0;
+    bottom: 0;
+    padding: 10px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
-    padding: 10px;
-    padding-left: 220px;  /* space for idolButtons */
-    padding-right: 180px; /* space for categoryPanel */
     overflow-y: auto;
+    box-sizing: border-box;
   }
+
 
   .catalog-thumb {
     width: 100%;
