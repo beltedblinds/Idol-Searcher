@@ -152,35 +152,6 @@
     transition: opacity 0.3s ease-in-out;
   }
 
-  #saveBtn {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 2;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    transition: all 0.2s ease;
-  }
-
-  #saveBtn.saved {
-    color: var(--accent);
-    background: rgba(255, 123, 203, 0.2);
-  }
-
-  #saveBtn:hover {
-    background: rgba(255, 123, 203, 0.25);
-    color: var(--accent);
-  }
-
   #label {
     margin-top: 12px;
     font-size: 15px;
@@ -212,12 +183,19 @@
     border-color: var(--accent);
   }
 
-  .saved-item img, .saved-item video {
+  .saved-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 10px;
   }
+
+  .saved-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  }
+
 
   .saved-badge {
     position: absolute;
@@ -229,60 +207,64 @@
     border-radius: 999px;
   }
 
-  #catalogPanel {
-    position: fixed;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 0;
-    background: #111;
-    border-left: none;
-    padding: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-    z-index: 999;
-    transition: all 0.3s ease;
-    visibility: hidden;
-    pointer-events: none;
-  }
+  /* 🧭 Catalog panel (right) */
+  /* 🗂️ Catalog panel (right side) */
+#catalogPanel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background: #111;
+  border-left: none;
+  padding: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 999;
+  transition: all 0.3s ease;
+  visibility: hidden;
+  pointer-events: none;
+}
 
-  #catalogPanel.open {
-    width: 280px;
-    padding: 10px;
-    border-left: 1px solid #333;
-    overflow-y: auto;
-    visibility: visible;
-    pointer-events: auto;
-  }
+#catalogPanel.open {
+  width: 280px;
+  padding: 10px;
+  border-left: 1px solid #333;
+  overflow-y: auto;
+  visibility: visible;
+  pointer-events: auto;
+}
 
-  #categoryPanel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-    background: #111;
-    border-right: none;
-    padding: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-    z-index: 998;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: left 0.3s ease, width 0.3s ease;
-    visibility: hidden;
-    pointer-events: none;
-  }
+/* 🗂️ Category Panel (auto-aligns beside idol buttons if open) */
+#categoryPanel {
+  position: fixed;
+  top: 0;
+  left: 0; /* default flush left */
+  height: 100%;
+  width: 0;
+  background: #111;
+  border-right: none;
+  padding: 0;
+  overflow: hidden; /* hidden when closed */
+  box-sizing: border-box;
+  z-index: 998;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: left 0.3s ease, width 0.3s ease;
+  visibility: hidden;
+  pointer-events: none;
+}
 
-  #categoryPanel.open {
-    width: 160px;
-    padding: 10px;
-    border-right: 1px solid #333;
-    overflow-y: auto;
-    visibility: visible;
-    pointer-events: auto;
-  }
+#categoryPanel.open {
+  width: 160px;
+  padding: 10px;
+  border-right: 1px solid #333;
+  overflow-y: auto; /* ✅ scrollbar visible when open */
+  visibility: visible;
+  pointer-events: auto;
+}
+
 
   .catalog-thumb {
     width: 100%;
@@ -298,31 +280,47 @@
     border-color: var(--accent);
   }
 
-  #idolButtons {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    overflow: hidden;
-    background: #111;
-    border-right: none;
-    transition: width 0.3s ease;
-    padding: 0;
-    box-sizing: border-box;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    visibility: hidden;
-    pointer-events: none;
-  }
+/* 🌸 Idol buttons (left side) */
+#idolButtons {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  overflow: hidden; /* ✅ hide content and scrollbar */
+  background: #111;
+  border-right: none; /* hide border until open */
+  transition: width 0.3s ease;
+  padding: 0;
+  box-sizing: border-box;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  visibility: hidden;
+  pointer-events: none;
+}
 
-  #idolButtons::-webkit-scrollbar { display: none; }
-  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
-  #idolButtons.open { width: 200px; padding: 10px; border-right: 1px solid #333; overflow-y: auto; visibility: visible; pointer-events: auto; }
+/* Hide scrollbar completely in all browsers */
+#idolButtons::-webkit-scrollbar {
+  display: none;
+}
+#idolButtons {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
 
-  .idol-btn, .category-btn {
+#idolButtons.open {
+  width: 200px;
+  padding: 10px;
+  border-right: 1px solid #333;
+  overflow-y: auto; /* ✅ scrollbar appears when open */
+  visibility: visible;
+  pointer-events: auto;
+}
+
+
+  .idol-btn {
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
@@ -334,13 +332,47 @@
     text-align: left;
   }
 
-  .idol-btn:hover, .category-btn:hover { background: #272727; border-color: var(--accent); color: var(--accent-hover); }
-  .idol-btn.active, .category-btn.active { background: #272727; border-color: var(--accent); color: var(--accent); }
+  .idol-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
 
+  .idol-btn.active {
+  background: #272727;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+
+.category-btn {
+  background: var(--card);
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.category-btn:hover {
+  background: #272727;
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+
+.category-btn.active {
+  background: #272727;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+  
 </style>
 </head>
 <body>
-<h1>💖 Idol Searcher</h1>
+<h1>💖 K-pop Idol Gallery</h1>
 
 <div class="search-container">
   <input id="searchInput" placeholder="Search folder..." />
@@ -353,32 +385,533 @@
   <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
 </div>
 
+<!-- 🩷 Idol buttons now floating on left -->
 <div id="idolButtons"></div>
+
+<!-- 🌸 Category panel (slides out beside idol buttons) -->
 <div id="categoryPanel"></div>
 
 <div class="image-wrapper">
-  <button id="saveBtn" title="Save / Unsave">💾</button>
   <img id="idolImage" src="" alt="Idol" />
 </div>
 
 <div id="label"></div>
 <div id="savedList"></div>
+
+<!-- Catalog stays on right -->
 <div id="catalogPanel"></div>
 
 <script>
-// Full JavaScript remains unchanged
-// All functions for previous, random, cycle, saved mode still intact
-// Only button UI removed, functionality still works programmatically
-
 // 🖼️ + 🎥 Combined sources
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
-// ... [All other JS from original code stays exactly the same] ...
+  
+let catalog = [];
+let filteredCatalog = [];
+let saved = [];
+let history = [];
+let historyPos = -1;
+let savedIndex = 0;
+let savedMode = false;
+let cycleId = null;
+let catalogOpen = false;
+const CYCLE_MS = 7000;
+let seenImages = new Set();
+let currentMediaUrl = ""; // 🩷 track current image/video URL
+
+/* DOM */
+const imgEl = document.getElementById("idolImage");
+const labelEl = document.getElementById("label");
+const savedListEl = document.getElementById("savedList");
+const randomBtn = document.getElementById("randomBtn");
+const prevBtn = document.getElementById("prevBtn");
+const cycleToggle = document.getElementById("cycleToggle");
+const cycleLabel = document.getElementById("cycleLabel");
+const savedModeToggle = document.getElementById("savedModeToggle");
+const savedModeLabel = document.getElementById("savedModeLabel");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
+const suggestionsEl = document.getElementById("suggestions");
+const catalogPanel = document.getElementById("catalogPanel");
+const catalogToggle = document.getElementById("catalogToggle");
+const idolButtonsEl = document.getElementById("idolButtons");
+
+/* Parser and functions (same as before) */
+function parseCatalogText(text) {
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  return lines.map(line => {
+    const parts = line.split(",").map(p => p.trim());
+    return { folder: parts[0], raw: parts[1], thumb: parts[2], category: parts[3] || ""};
+  }).filter(e => e.folder && e.raw && e.thumb)
+    .sort((a,b)=>a.folder.localeCompare(b.folder));
+}
+
+function displayUrl(url, folder, pushHist = true) {
+  if (!url) return;
+
+  const wrapper = document.querySelector(".image-wrapper");
+  wrapper.innerHTML = ''; // clear old media
+
+  let media;
+  if (url.match(/\.(mp4|webm|mov)$/i)) {
+    media = document.createElement("video");
+    media.src = url;
+    media.autoplay = true;
+    media.loop = true;
+    media.muted = true;
+    media.playsInline = true;
+    media.style.maxWidth = "100%";
+    media.style.maxHeight = "78vh";
+    media.style.borderRadius = "16px";
+  } else {
+    media = document.createElement("img");
+    media.src = url;
+    media.style.maxWidth = "100%";
+    media.style.maxHeight = "78vh";
+    media.style.borderRadius = "16px";
+    media.style.transition = "opacity 0.3s ease-in-out";
+  }
+
+  wrapper.appendChild(media);
+  labelEl.textContent = folder || "";
+
+  // 🩷 Track the current media
+  currentMediaUrl = url;
+
+
+  if (pushHist && (!history.length || history[history.length - 1] !== url)) {
+    history.push(url);
+    historyPos = history.length - 1;
+  }
+}
+
+
+function getCurrentPool() {
+  if (savedMode && saved.length) return saved;
+  if (filteredCatalog.length) return filteredCatalog;
+  return catalog;
+}
+
+
+function handleSearch(input) {
+  const term = input.trim().toLowerCase();
+
+  if (!term) {
+    filteredCatalog = catalog.slice();
+    showRandom();
+    suggestionsEl.hidden = true;
+
+    // ✅ Reset idol buttons & categories when search is cleared
+    const allIdols = [...new Set(catalog.map(it => it.folder))];
+    renderIdolButtons(allIdols);
+
+    const allCategories = categories.filter(cat =>
+      catalog.some(it => it.category === cat)
+    );
+    renderCategoryButtons(allCategories);
+
+    return;
+  }
+
+  const matches = [...new Set(catalog.map(it => it.folder))].filter(f =>
+    f.toLowerCase().includes(term)
+  );
+  showSuggestions(matches, term);
+}
+
+
+function showSuggestions(matches, term) {
+  suggestionsEl.innerHTML = "";
+  if (!matches.length) {
+    suggestionsEl.innerHTML = `<div class="no-result">No results for "${term}"</div>`;
+    suggestionsEl.hidden = false;
+    return;
+  }
+  matches.forEach(folder => {
+    const div = document.createElement("div");
+    div.className = "suggestion";
+    div.textContent = folder;
+    div.onclick = () => selectFolder(folder);
+    suggestionsEl.appendChild(div);
+  });
+  suggestionsEl.hidden = false;
+}
+
+/* 📂 Catalog + Idol Buttons */
+function selectFolder(folder) {
+  const match = folder.trim().toLowerCase();
+  filteredCatalog = catalog.filter(it => it.folder.toLowerCase() === match);
+  if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
+  suggestionsEl.hidden = true;
+  searchInput.value = folder;
+  seenImages.clear();
+  showRandom();
+  applyFilters();
+  if (catalogOpen) renderCatalogThumbnails();
+  renderIdolButtons();
+}
+
+function toggleCatalog() {
+  catalogOpen = !catalogOpen;
+  catalogPanel.classList.toggle("open", catalogOpen);
+  idolButtonsEl.classList.toggle("open", catalogOpen);
+
+  // 🧠 Ensure category panel shifts right if it's already open
+  if (categoryPanel.classList.contains("open")) {
+    categoryPanel.style.left = idolButtonsEl.classList.contains("open") ? "200px" : "0";
+  }
+
+  if (catalogOpen) {
+    renderCatalogThumbnails();
+    renderIdolButtons();
+  }
+}
+
+
+function renderCatalogThumbnails() {
+  const pool = getCurrentPool();
+  catalogPanel.innerHTML = "";
+  pool.forEach(item => {
+    const img = document.createElement("img");
+    img.src = item.thumb || item.raw || item.url;
+    img.className = "catalog-thumb";
+    img.title = item.folder;
+    img.onclick = () => displayUrl(item.raw || item.url, item.folder, true);
+    catalogPanel.appendChild(img);
+  });
+}
+
+let currentIdolFilter = null; // tracks which idol is currently active in catalog
+
+function renderIdolButtons(list = null) {
+  idolButtonsEl.innerHTML = "";
+  const names = list || [...new Set(filteredCatalog.map(it => it.folder))];
+  if (!names.length) return;
+  names.forEach(name => {
+    const btn = document.createElement("button");
+    btn.className = "idol-btn";
+    btn.textContent = name;
+    btn.onclick = () => toggleCatalogIdol(name, btn);
+    idolButtonsEl.appendChild(btn);
+  });
+}
+
+function toggleCatalogIdol(folderName, btn) {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  // 🩷 Deselect idol
+  if (currentIdolFilter === folderName) {
+    currentIdolFilter = null;
+    btn.classList.remove("active");
+    applyFilters();
+
+    // ✅ Restore idols based on current category & search
+    const idolsToShow = [...new Set(
+      catalog
+        .filter(it =>
+          (!currentCategoryFilter || it.category.toLowerCase() === currentCategoryFilter.toLowerCase()) &&
+          (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+        )
+        .map(it => it.folder)
+    )];
+    renderIdolButtons(idolsToShow);
+
+    // ✅ If a category is already selected, keep the current category list as-is
+    // Otherwise, restore categories for visible idols
+    if (!currentCategoryFilter) {
+      const catsToShow = [...new Set(
+        catalog
+          .filter(it =>
+            (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+          )
+          .map(it => it.category)
+      )];
+    
+      // 🩷 Keep order consistent with master `categories` list
+      const orderedCats = categories.filter(cat => catsToShow.includes(cat));
+      renderCategoryButtons(orderedCats);
+    }
+
+
+    return;
+  }
+
+  // 🩷 Select new idol
+  currentIdolFilter = folderName;
+  [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  applyFilters();
+
+  // ✅ If no category is currently selected, limit the list to only this idol’s categories
+  if (!currentCategoryFilter) {
+  const idolCats = [...new Set(
+    catalog
+      .filter(it =>
+        it.folder === folderName &&
+        (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+      )
+      .map(it => it.category)
+  )];
+
+  // 🩷 Keep original order from `categories` file
+  const orderedIdolCats = categories.filter(cat => idolCats.includes(cat));
+  renderCategoryButtons(orderedIdolCats);
+}
+
+
+  // ✅ If a category *is* selected, keep category list stable (don’t reset)
+}
+
+
+
+
+
+
+function scrollToIdol(folderName) {
+  const thumbs = [...catalogPanel.querySelectorAll(".catalog-thumb")];
+  const target = thumbs.find(img => img.title.toLowerCase() === folderName.toLowerCase());
+  if (target) {
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    target.style.borderColor = "var(--accent)";
+    setTimeout(() => target.style.borderColor = "#333", 1200);
+  }
+}
+
+/* 🩷 Category Handling */
+const CAT_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
+let categories = [];
+let categoryOpen = false;
+let currentCategoryFilter = null;
+
+const categoryPanel = document.getElementById("categoryPanel");
+const categoryToggle = document.getElementById("categoryToggle");
+
+async function loadCategories() {
+  try {
+    const res = await fetch(CAT_URL);
+    const text = await res.text();
+    categories = text.split("\n").map(l => l.trim()).filter(Boolean);
+  } catch (e) {
+    console.error("Failed to load categories", e);
+  }
+}
+
+function toggleCategories() {
+  categoryOpen = !categoryOpen;
+  categoryPanel.classList.toggle("open", categoryOpen);
+
+  // 🧠 Auto-align Category panel beside idol buttons if open
+  if (categoryOpen) {
+    categoryPanel.style.left = idolButtonsEl.classList.contains("open") ? "200px" : "0";
+
+    // 🩷 Reflect current search + idol filter in category panel
+    const searchTerm = searchInput.value.trim().toLowerCase();
+
+    let visibleCategories;
+    if (currentIdolFilter) {
+      // Show only categories of the current idol (respecting search)
+      visibleCategories = categories.filter(cat =>
+        catalog.some(it =>
+          it.category === cat &&
+          it.folder.toLowerCase() === currentIdolFilter.toLowerCase() &&
+          (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+        )
+      );
+
+    } else if (searchTerm) {
+      // Show categories matching search term only
+      visibleCategories = categories.filter(cat =>
+        catalog.some(it =>
+          it.category === cat &&
+          it.folder.toLowerCase().includes(searchTerm)
+        )
+      );
+
+    } else {
+      // Default: show all categories
+      visibleCategories = categories;
+    }
+
+    renderCategoryButtons(visibleCategories);
+  }
+}
+
+
+function renderCategoryButtons(list = categories) {
+  categoryPanel.innerHTML = "";
+  list.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "category-btn";
+    btn.textContent = cat;
+    if (currentCategoryFilter === cat) btn.classList.add("active");
+    btn.onclick = () => toggleCategoryFilter(cat, btn);
+    categoryPanel.appendChild(btn);
+  });
+}
+
+function toggleCategoryFilter(cat, btn) {
+  // 🩷 Handle deselect (unclick category)
+if (currentCategoryFilter === cat) {
+  currentCategoryFilter = null;
+  btn.classList.remove("active");
+  applyFilters();
+
+  const searchTerm = searchInput.value.trim().toLowerCase();
+
+  // ✅ If an idol is still selected, restore its categories (respecting search)
+  if (currentIdolFilter) {
+    // Build the idol's categories but preserve categories.txt order
+    const idolCats = categories.filter(cat =>
+      catalog.some(it =>
+        it.category === cat &&
+        it.folder === currentIdolFilter &&
+        (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+      )
+    );
+    renderCategoryButtons(idolCats);
+
+    // Re-highlight the currently selected idol
+    [...idolButtonsEl.children].forEach(b => {
+      if (b.textContent === currentIdolFilter) b.classList.add("active");
+    });
+} else {
+    // ✅ No idol selected → restore based on search term only
+    const visibleIdols = [...new Set(
+      catalog
+        .filter(it => !searchTerm || it.folder.toLowerCase().includes(searchTerm))
+        .map(it => it.folder)
+    )];
+    const visibleCats = categories.filter(cat =>
+      catalog.some(it =>
+        it.category === cat &&
+        (!searchTerm || it.folder.toLowerCase().includes(searchTerm)) &&
+        (!currentIdolFilter || it.folder === currentIdolFilter)
+      )
+    );
+    renderCategoryButtons(visibleCats);
+    renderIdolButtons(visibleIdols);
+  }
+
+  return;
+}
+
+  // 🩷 Set new category filter
+  currentCategoryFilter = cat;
+  [...categoryPanel.children].forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  applyFilters();
+
+  // 🩷 Limit idols to only those in this category, respecting search term
+const searchTerm = searchInput.value.trim().toLowerCase();
+const idolsWithCat = [...new Set(
+  catalog
+    .filter(it =>
+      it.category &&
+      it.category.toLowerCase() === currentCategoryFilter.toLowerCase() &&
+      (!searchTerm || it.folder.toLowerCase().includes(searchTerm))
+    )
+    .map(it => it.folder)
+)];
+
+
+  if (!currentIdolFilter) {
+    renderIdolButtons(idolsWithCat);
+  } else {
+    // ✅ Keep idol list as-is and ensure idol stays highlighted
+    [...idolButtonsEl.children].forEach(b => {
+      if (b.textContent === currentIdolFilter) b.classList.add("active");
+    });
+  }
+}
+
+/* Combine idol + category filters */
+function applyFilters() {
+  const searchTerm = searchInput.value.trim().toLowerCase();
+  const idolFilter = currentIdolFilter ? currentIdolFilter.toLowerCase() : "";
+  const hasSearch = !!searchTerm;
+  const hasIdol = !!idolFilter;
+  const hasCat = !!currentCategoryFilter;
+
+  filteredCatalog = catalog.filter(it => {
+    const matchSearch = !hasSearch || it.folder.toLowerCase().includes(searchTerm);
+    const matchIdol = !hasIdol || it.folder.toLowerCase().includes(idolFilter);
+    const matchCat = !hasCat || (it.category && it.category.toLowerCase() === currentCategoryFilter?.toLowerCase());
+    return matchSearch && matchIdol && matchCat;
+  });
+
+  if (catalogOpen) renderCatalogThumbnails();
+
+  // 🩷 Update categories dynamically based on search term
+  if (hasSearch && !hasIdol && !hasCat) {
+  // Build the categories list for search results but keep categories.txt order
+    const searchCats = categories.filter(cat =>
+      catalog.some(it =>
+        it.category === cat &&
+        it.folder.toLowerCase().includes(searchTerm)
+      )
+    );
+    renderCategoryButtons(searchCats);
+  }
+}
+
+
+
+
+async function loadCatalog() {
+  try {
+    const [r1, r2] = await Promise.all([
+      fetch(MEDIA_URL),
+      fetch(MEDIA_URL_02)
+    ]);
+    const [t1, t2] = await Promise.all([r1.text(), r2.text()]);
+    const combined = t1 + "\n" + t2;
+    catalog = parseCatalogText(combined);
+
+    filteredCatalog = catalog.slice();
+    const allIdols = [...new Set(catalog.map(it => it.folder))];
+    renderIdolButtons(allIdols);
+    const allCategories = [...new Set(catalog.map(it => it.category))];
+    renderCategoryButtons(allCategories);
+
+    showRandom();
+  } catch (e) {
+    console.error("Error loading gallery:", e);
+    labelEl.textContent = "Error loading gallery list.";
+  }
+}
+
+
+
+
+
+
+
+
+searchBtn.onclick = () => selectFolder(searchInput.value);
+catalogToggle.onclick = toggleCatalog;
+categoryToggle.onclick = toggleCategories;
+
+
+searchInput.addEventListener("input", e => handleSearch(e.target.value));
+searchInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); selectFolder(searchInput.value); }});
+document.addEventListener("click", e => { if (!document.querySelector(".search-container").contains(e.target)) suggestionsEl.hidden = true; });
+
+window.addEventListener("keydown", e => {
+  switch (e.key) {
+    case "ArrowLeft": e.preventDefault(); showPrevious(); break;
+    case "ArrowRight": e.preventDefault(); savedMode ? showNextSaved() : showRandom(); break;
+    case "ArrowDown": e.preventDefault(); saveCurrent(); break;
+    case "ArrowUp": e.preventDefault(); toggleSavedMode(); break;
+  }
+});
 
 loadSaved();
 loadCatalog();
 loadCategories();
+  
 </script>
 </body>
 </html>
