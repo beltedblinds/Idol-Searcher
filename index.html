@@ -343,7 +343,7 @@ function selectFolder(folder) {
 
 
 function applyFilters() {
-  // Filter catalog based on current idol/category filters AND current search term
+  // Filter catalog based on current idol/category filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
@@ -355,18 +355,26 @@ function applyFilters() {
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
   let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
 
+  // Apply asymmetric filtering
   if (firstSelection === "idol" && currentIdolFilter) {
-    categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
-                                         .map(it => it.category)
-                                         .filter(Boolean))].sort();
+    categoriesForButtons = [...new Set(
+      catalog.filter(it => it.folder === currentIdolFilter)
+             .map(it => it.category)
+             .filter(Boolean)
+    )].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
-    idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
-                                       .map(it => it.folder))].sort();
+    idolsForButtons = [...new Set(
+      catalog.filter(it => it.category === currentCategoryFilter)
+             .map(it => it.folder)
+    )].sort();
   }
 
-  // Also filter buttons by current search term
+  // Apply search term to both buttons
   if (currentSearchTerm) {
     idolsForButtons = idolsForButtons.filter(name => name.toLowerCase().includes(currentSearchTerm));
+    categoriesForButtons = categoriesForButtons.filter(cat => 
+      filteredCatalog.some(item => item.category === cat)
+    );
   }
 
   renderIdolButtons(idolsForButtons);
