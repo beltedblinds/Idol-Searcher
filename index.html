@@ -278,19 +278,30 @@ function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : ca
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
+  const pool = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return true;
+  });
+
   if (!term) {
-    filteredCatalog = catalog.slice();
-    renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
-    renderCategoryButtons([...new Set(catalog.map(it=>it.category).filter(Boolean))]);
+    filteredCatalog = pool;
+    const availableIdols = [...new Set(pool.map(it => it.folder))].sort();
+    const availableCategories = [...new Set(pool.map(it => it.category).filter(Boolean))].sort();
+    renderIdolButtons(availableIdols);
+    renderCategoryButtons(availableCategories);
     renderCatalogThumbnails();
     suggestionsEl.hidden = true;
     return;
   }
-  const matches = [...new Set(catalog.map(it => it.folder))].filter(f =>
+
+  // Suggest folders that match the search term within the current pool
+  const matches = [...new Set(pool.map(it => it.folder))].filter(f =>
     f.toLowerCase().includes(term)
   );
   showSuggestions(matches, term);
 }
+
 
 function showSuggestions(matches, term) {
   suggestionsEl.innerHTML = "";
@@ -311,13 +322,23 @@ function showSuggestions(matches, term) {
 
 function selectFolder(folder) {
   const match = folder.trim().toLowerCase();
-  filteredCatalog = catalog.filter(it => it.folder.toLowerCase() === match);
-  if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
+
+  // Apply current filters first
+  const pool = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return true;
+  });
+
+  // Filter by search term
+  filteredCatalog = pool.filter(it => it.folder.toLowerCase() === match);
+  if (!filteredCatalog.length) filteredCatalog = pool.filter(it => it.folder.toLowerCase().includes(match));
+
   suggestionsEl.hidden = true;
   searchInput.value = folder;
-  applyFilters();
-  renderCatalogThumbnails();
+  applyFilters(); // this will update buttons and thumbnails
 }
+
 
 function applyFilters() {
   // Filter catalog based on current idol and category filters
