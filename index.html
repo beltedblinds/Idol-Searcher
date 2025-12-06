@@ -320,13 +320,25 @@ function selectFolder(folder) {
 }
 
 function applyFilters() {
+  // Filter catalog based on current idol and category filters
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
     return true;
   });
+
+  // Calculate available idols and categories based on filteredCatalog
+  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
+  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+
+  // Re-render buttons with only the available options
+  renderIdolButtons(availableIdols);
+  renderCategoryButtons(availableCategories);
+
+  // Render thumbnails
   renderCatalogThumbnails();
 }
+
 
 function renderCatalogThumbnails() {
   const pool = getCurrentPool();
@@ -376,15 +388,20 @@ overlay.addEventListener("click", () => {
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
-  const names = list || [...new Set(filteredCatalog.map(it => it.folder))];
+  const names = list || [...new Set(catalog.map(it => it.folder))];
   names.forEach(name => {
     const btn = document.createElement("button");
     btn.className = "idol-btn";
     btn.textContent = name;
-    btn.onclick = () => toggleCatalogIdol(name, btn);
+    if (currentIdolFilter === name) btn.classList.add("active");
+    btn.onclick = () => {
+      currentIdolFilter = currentIdolFilter === name ? null : name;
+      applyFilters();
+    };
     idolButtonsEl.appendChild(btn);
   });
 }
+
 
 function toggleCatalogIdol(folderName, btn) {
   if (currentIdolFilter === folderName) {
@@ -400,17 +417,22 @@ function toggleCatalogIdol(folderName, btn) {
   applyFilters();
 }
 
-function renderCategoryButtons(list = categories) {
+function renderCategoryButtons(list = null) {
   categoryPanel.innerHTML = "";
-  list.forEach(cat => {
+  const cats = list || [...new Set(catalog.map(it => it.category).filter(Boolean))];
+  cats.forEach(cat => {
     const btn = document.createElement("button");
     btn.className = "category-btn";
     btn.textContent = cat;
     if (currentCategoryFilter === cat) btn.classList.add("active");
-    btn.onclick = () => toggleCategoryFilter(cat, btn);
+    btn.onclick = () => {
+      currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
+      applyFilters();
+    };
     categoryPanel.appendChild(btn);
   });
 }
+
 
 function toggleCategoryFilter(cat, btn) {
   if (currentCategoryFilter === cat) {
