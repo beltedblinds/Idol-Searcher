@@ -10,6 +10,7 @@
         --bg: #0d0d0d;
         --card: #1b1b1b;
         --accent: #ff7bcb;
+        --accent-hover: #ff94d8;
         --text: #f1f1f1;
     }
 
@@ -22,93 +23,111 @@
         height: 100vh;
     }
 
-    /* ───────────────────── Sidebar ───────────────────── */
+    /* ───────────────────── Panels (MATCHES IDOL SHUFFLER) ───────────────────── */
 
-    #sidebar {
-        width: 260px;
+    #idolPanel {
+        width: 200px;
         background: #111;
         border-right: 1px solid #333;
-        overflow-y: auto;
         padding: 10px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    #categoryPanel {
+        width: 160px;
+        background: #111;
+        border-right: 1px solid #333;
+        padding: 10px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
 
     h2 {
-        font-size: 18px;
-        margin: 12px 0 6px;
+        font-size: 16px;
+        margin: 10px 0 4px;
         color: var(--accent);
     }
 
-    .btn {
+    .side-btn {
         background: var(--card);
         border: 1px solid #333;
         padding: 8px 10px;
-        margin: 4px 0;
-        border-radius: 6px;
+        border-radius: 8px;
         width: 100%;
-        text-align: left;
         color: var(--text);
         cursor: pointer;
+        font-size: 13px;
+        text-align: left;
         transition: 0.2s;
     }
 
-    .btn:hover {
+    .side-btn:hover {
+        background: #272727;
+        border-color: var(--accent);
+        color: var(--accent-hover);
+    }
+
+    .side-btn.active {
         background: #272727;
         border-color: var(--accent);
         color: var(--accent);
     }
 
-    .btn.active {
-        background: #2a2a2a;
-        border-color: var(--accent);
-        color: var(--accent);
-    }
-
-    /* ───────────────────── Gallery Grid ───────────────────── */
+    /* ───────────────────── Thumbnails (EXACT IDOL SHUFFLER STYLE) ───────────────────── */
 
     #gallery {
         flex: 1;
-        padding: 20px;
         overflow-y: auto;
+        padding: 20px;
         display: grid;
+        gap: 14px;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 12px;
     }
 
     .thumb {
+        width: 100%;
+        aspect-ratio: 1 / 1; /* square just like saved thumbnails */
+        background: #111;
         border-radius: 10px;
         border: 1px solid #333;
         overflow: hidden;
         cursor: pointer;
-        background: #000;
-        transition: 0.15s;
+        transition: transform 0.2s, border-color 0.2s;
     }
 
     .thumb:hover {
-        transform: scale(1.03);
+        transform: scale(1.07);
         border-color: var(--accent);
     }
 
-    .thumb img, .thumb video {
+    .thumb img, 
+    .thumb video {
         width: 100%;
-        height: 160px;
+        height: 100%;
         object-fit: cover;
     }
 
-    /* ───────────────────── Viewer Modal ───────────────────── */
+    /* ───────────────────── Modal viewer ───────────────────── */
 
     #viewer {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.85);
         display: none;
         justify-content: center;
         align-items: center;
+        background: rgba(0,0,0,0.9);
         z-index: 200;
     }
 
-    #viewerContent img, #viewerContent video {
+    #viewerContent img,
+    #viewerContent video {
         max-width: 95vw;
-        max-height: 90vh;
+        max-height: 92vh;
         border-radius: 12px;
         border: 2px solid var(--accent);
     }
@@ -121,36 +140,38 @@
         padding: 6px 12px;
         border: 1px solid #555;
         border-radius: 6px;
-        cursor: pointer;
         color: #fff;
-        font-size: 16px;
+        cursor: pointer;
     }
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div id="sidebar">
+<!-- LEFT PANELS – SAME STRUCTURE AS IDOL SHUFFLER -->
+<div id="idolPanel">
     <h2>Idols</h2>
     <div id="idolList"></div>
+</div>
 
+<div id="categoryPanel">
     <h2>Categories</h2>
     <div id="categoryList"></div>
 </div>
 
-<!-- Thumbnails -->
+<!-- THUMBNAIL GALLERY -->
 <div id="gallery"></div>
 
-<!-- Viewer Modal -->
+<!-- VIEWER -->
 <div id="viewer">
     <button id="closeViewer">Close</button>
     <div id="viewerContent"></div>
 </div>
 
 <script>
-const MEDIA_URL_1 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
-const MEDIA_URL_2 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
-const CAT_URL     = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
+/* DATA SOURCES (same as Idol-Shuffler) */
+const MEDIA1 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
+const MEDIA2 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
+const CATFILE = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
 
 let catalog = [];
 let categories = [];
@@ -158,88 +179,89 @@ let categories = [];
 let currentIdol = null;
 let currentCategory = null;
 
-const idolListEl = document.getElementById("idolList");
-const categoryListEl = document.getElementById("categoryList");
-const galleryEl = document.getElementById("gallery");
+/* ELEMENTS */
+const idolList = document.getElementById("idolList");
+const categoryList = document.getElementById("categoryList");
+const gallery = document.getElementById("gallery");
+
 const viewer = document.getElementById("viewer");
 const viewerContent = document.getElementById("viewerContent");
-document.getElementById("closeViewer").onclick = () => viewer.style.display = "none";
+document.getElementById("closeViewer").onclick = () => (viewer.style.display = "none");
 
-/* ───────────────────── Load catalog ───────────────────── */
+/* PARSER */
 function parse(text) {
-    return text.split("\n").map(l => l.trim()).filter(Boolean).map(line => {
-        const p = line.split(",").map(x => x.trim());
+    return text.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+        const p = l.split(",").map(x => x.trim());
         return { folder: p[0], raw: p[1], thumb: p[2], category: p[3] || "" };
     });
 }
 
+/* LOAD DATA */
 async function loadCatalog() {
-    const [r1, r2] = await Promise.all([fetch(MEDIA_URL_1), fetch(MEDIA_URL_2)]);
+    const [r1, r2] = await Promise.all([fetch(MEDIA1), fetch(MEDIA2)]);
     const [t1, t2] = await Promise.all([r1.text(), r2.text()]);
     catalog = [...parse(t1), ...parse(t2)];
     buildIdolButtons();
 }
 
-/* ───────────────────── Load categories ───────────────────── */
 async function loadCategories() {
-    const txt = await (await fetch(CAT_URL)).text();
+    const txt = await (await fetch(CATFILE)).text();
     categories = txt.split("\n").map(x => x.trim()).filter(Boolean);
     buildCategoryButtons();
 }
 
-/* ───────────────────── Build sidebar buttons ───────────────────── */
+/* PANELS */
 function buildIdolButtons() {
-    idolListEl.innerHTML = "";
+    idolList.innerHTML = "";
     const idols = [...new Set(catalog.map(x => x.folder))];
 
     idols.forEach(name => {
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.textContent = name;
-        b.onclick = () => selectIdol(name, b);
-        idolListEl.appendChild(b);
+        const btn = document.createElement("button");
+        btn.className = "side-btn";
+        btn.textContent = name;
+        btn.onclick = () => selectIdol(name, btn);
+        idolList.appendChild(btn);
     });
 }
 
 function buildCategoryButtons() {
-    categoryListEl.innerHTML = "";
+    categoryList.innerHTML = "";
     categories.forEach(cat => {
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.textContent = cat;
-        b.onclick = () => selectCategory(cat, b);
-        categoryListEl.appendChild(b);
+        const btn = document.createElement("button");
+        btn.className = "side-btn";
+        btn.textContent = cat;
+        btn.onclick = () => selectCategory(cat, btn);
+        categoryList.appendChild(btn);
     });
 }
 
-/* ───────────────────── Filters ───────────────────── */
+function highlight(group, activeBtn) {
+    [...group.children].forEach(b => b.classList.remove("active"));
+    if (activeBtn) activeBtn.classList.add("active");
+}
+
+/* FILTER SELECTORS */
 function selectIdol(name, btn) {
     currentIdol = name;
     currentCategory = null;
-    highlightButtons(idolListEl, btn);
-    highlightButtons(categoryListEl, null);
+    highlight(idolList, btn);
+    highlight(categoryList, null);
     renderGallery();
 }
 
 function selectCategory(cat, btn) {
     currentCategory = cat;
     currentIdol = null;
-    highlightButtons(categoryListEl, btn);
-    highlightButtons(idolListEl, null);
+    highlight(categoryList, btn);
+    highlight(idolList, null);
     renderGallery();
 }
 
-function highlightButtons(container, activeBtn) {
-    [...container.children].forEach(b => b.classList.remove("active"));
-    if (activeBtn) activeBtn.classList.add("active");
-}
-
-/* ───────────────────── Render Thumbnails Grid ───────────────────── */
+/* RENDER THUMBNAILS (MATCHES IDOL SHUFFLER STYLE) */
 function renderGallery() {
-    galleryEl.innerHTML = "";
+    gallery.innerHTML = "";
 
     let items = catalog;
-
     if (currentIdol) items = items.filter(x => x.folder === currentIdol);
     if (currentCategory) items = items.filter(x => x.category === currentCategory);
 
@@ -254,25 +276,22 @@ function renderGallery() {
 
         div.onclick = () => openViewer(item);
 
-        galleryEl.appendChild(div);
+        gallery.appendChild(div);
     });
 }
 
-/* ───────────────────── Viewer Modal ───────────────────── */
+/* VIEWER */
 function openViewer(item) {
     viewer.style.display = "flex";
-
     const isVideo = /\.(mp4|webm|mov)$/i.test(item.raw);
     viewerContent.innerHTML = isVideo
         ? `<video src="${item.raw}" autoplay controls></video>`
         : `<img src="${item.raw}">`;
 }
 
-/* ───────────────────── Init ───────────────────── */
-
+/* INIT */
 loadCatalog();
 loadCategories();
-
 </script>
 </body>
 </html>
