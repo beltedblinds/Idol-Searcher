@@ -256,6 +256,7 @@ let filteredCatalog = [];
 let currentIdolFilter = null;
 let currentCategoryFilter = null;
 let categories = [];
+let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
 
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -348,17 +349,26 @@ function applyFilters() {
     return true;
   });
 
-  // Calculate available idols and categories based on filteredCatalog
-  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
-  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+  // Determine buttons to show
+  let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
+  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
 
-  // Re-render buttons with only the available options
-  renderIdolButtons(availableIdols);
-  renderCategoryButtons(availableCategories);
+  if (firstSelection === "idol" && currentIdolFilter) {
+    // Shrink category list to only categories for selected idol
+    categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
+                                             .map(it => it.category)
+                                             .filter(Boolean))].sort();
+  } else if (firstSelection === "category" && currentCategoryFilter) {
+    // Shrink idol list to only idols for selected category
+    idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
+                                         .map(it => it.folder))].sort();
+  }
 
-  // Render thumbnails
+  renderIdolButtons(idolsForButtons);
+  renderCategoryButtons(categoriesForButtons);
   renderCatalogThumbnails();
 }
+
 
 
 function renderCatalogThumbnails() {
@@ -416,26 +426,17 @@ function renderIdolButtons(list = null) {
     btn.textContent = name;
     if (currentIdolFilter === name) btn.classList.add("active");
     btn.onclick = () => {
+      if (!firstSelection) firstSelection = "idol"; // mark first click
       currentIdolFilter = currentIdolFilter === name ? null : name;
+    
+      // reset firstSelection if both filters are cleared
+      if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
+    
       applyFilters();
     };
+
     idolButtonsEl.appendChild(btn);
   });
-}
-
-
-function toggleCatalogIdol(folderName, btn) {
-  if (currentIdolFilter === folderName) {
-    currentIdolFilter = null;
-    btn.classList.remove("active");
-    applyFilters();
-    renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
-    return;
-  }
-  currentIdolFilter = folderName;
-  [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  applyFilters();
 }
 
 function renderCategoryButtons(list = null) {
@@ -447,26 +448,17 @@ function renderCategoryButtons(list = null) {
     btn.textContent = cat;
     if (currentCategoryFilter === cat) btn.classList.add("active");
     btn.onclick = () => {
+      if (!firstSelection) firstSelection = "category"; // mark first click
       currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
+    
+      // reset firstSelection if both filters are cleared
+      if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
+    
       applyFilters();
     };
+
     categoryPanel.appendChild(btn);
   });
-}
-
-
-function toggleCategoryFilter(cat, btn) {
-  if (currentCategoryFilter === cat) {
-    currentCategoryFilter = null;
-    btn.classList.remove("active");
-    applyFilters();
-    renderCategoryButtons(categories);
-    return;
-  }
-  currentCategoryFilter = cat;
-  [...categoryPanel.children].forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  applyFilters();
 }
 
 // Show suggestions while typing
