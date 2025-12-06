@@ -21,7 +21,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px 20px 20px 400px; /* ✅ space for 2 side panels */
   box-sizing: border-box;
 }
 
@@ -56,21 +56,6 @@ h1 {
   border-radius: 8px;
   cursor: pointer;
   padding: 10px 14px;
-}
-
-.controls {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.toggle {
-  background: var(--card);
-  border: 1px solid #333;
-  color: var(--text);
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 0 4px;
 }
 
 /* ✅ MAIN GRID VIEW */
@@ -110,7 +95,7 @@ h1 {
   text-align: center;
 }
 
-/* Side Panels */
+/* ✅ ALWAYS-OPEN SIDE PANELS (SHUFFLER STYLE) */
 #idolButtons, #categoryPanel {
   position: fixed;
   top: 0;
@@ -118,13 +103,19 @@ h1 {
   background: #111;
   overflow-y: auto;
   padding: 10px;
-  width: 180px;
-  display: none;
+  width: 200px;
   z-index: 999;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-#idolButtons { left: 0; }
-#categoryPanel { right: 0; }
+#idolButtons::-webkit-scrollbar,
+#categoryPanel::-webkit-scrollbar {
+  display: none;
+}
+
+#idolButtons { left: 0; border-right: 1px solid #333; }
+#categoryPanel { left: 200px; border-right: 1px solid #333; }
 
 .idol-btn, .category-btn {
   width: 100%;
@@ -153,15 +144,9 @@ h1 {
   <button id="searchBtn">Search</button>
 </div>
 
-<div class="controls">
-  <span class="toggle" id="catalogToggle">Idols</span>
-  <span class="toggle" id="categoryToggle">Categories</span>
-</div>
-
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
 
-<!-- ✅ MAIN THUMB GRID -->
 <div id="thumbGrid"></div>
 
 <script>
@@ -179,10 +164,15 @@ const grid = document.getElementById("thumbGrid");
 const idolButtons = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
 
+/* ✅ NORMALIZED PARSER (fixes 25 vs 30 bug safely) */
 function parseCatalogText(text) {
   return text.split("\n").map(l=>{
     const p=l.split(",").map(x=>x.trim());
-    return {folder:p[0],raw:p[1],thumb:p[2],category:p[3]||""};
+    const folder = (p[0]||"").replace(/\s+/g," ").trim();
+    const raw = (p[1]||"").trim();
+    const thumb = (p[2]||"").trim();
+    const category = (p[3]||"").replace(/\s+/g," ").trim();
+    return {folder,raw,thumb,category};
   }).filter(x=>x.folder&&x.raw&&x.thumb);
 }
 
@@ -201,43 +191,47 @@ function renderGrid() {
 }
 
 function applyFilters() {
+  const idolNorm = currentIdolFilter ? currentIdolFilter.toLowerCase() : "";
+  const catNorm = currentCategoryFilter ? currentCategoryFilter.toLowerCase() : "";
+
   filteredCatalog = catalog.filter(it=>{
-    const idolMatch = !currentIdolFilter || it.folder===currentIdolFilter;
-    const catMatch = !currentCategoryFilter || it.category===currentCategoryFilter;
+    const idolMatch = !idolNorm || it.folder.toLowerCase() === idolNorm;
+    const catMatch = !catNorm || it.category.toLowerCase() === catNorm;
     return idolMatch && catMatch;
   });
+
   renderGrid();
 }
 
 function renderIdolButtons() {
-  idolButtons.innerHTML="";
-  [...new Set(catalog.map(i=>i.folder))].forEach(name=>{
+  idolButtons.innerHTML = "<b>Idols</b><br><br>";
+  [...new Set(catalog.map(i=>i.folder))].sort().forEach(name=>{
     const b=document.createElement("button");
-    b.className="idol-btn";
+    b.className="idol-btn" + (currentIdolFilter===name ? " active" : "");
     b.textContent=name;
-    b.onclick=()=>{currentIdolFilter=name;applyFilters();}
+    b.onclick=()=>{
+      currentIdolFilter=name;
+      renderIdolButtons();
+      applyFilters();
+    }
     idolButtons.appendChild(b);
   });
 }
 
 function renderCategoryButtons() {
-  categoryPanel.innerHTML="";
+  categoryPanel.innerHTML = "<b>Categories</b><br><br>";
   categories.forEach(cat=>{
     const b=document.createElement("button");
-    b.className="category-btn";
+    b.className="category-btn" + (currentCategoryFilter===cat ? " active" : "");
     b.textContent=cat;
-    b.onclick=()=>{currentCategoryFilter=cat;applyFilters();}
+    b.onclick=()=>{
+      currentCategoryFilter=cat;
+      renderCategoryButtons();
+      applyFilters();
+    }
     categoryPanel.appendChild(b);
   });
 }
-
-document.getElementById("catalogToggle").onclick=()=>{
-  idolButtons.style.display = idolButtons.style.display==="block"?"none":"block";
-};
-
-document.getElementById("categoryToggle").onclick=()=>{
-  categoryPanel.style.display = categoryPanel.style.display==="block"?"none":"block";
-};
 
 document.getElementById("searchBtn").onclick=()=>{
   const term=document.getElementById("searchInput").value.toLowerCase();
@@ -245,7 +239,7 @@ document.getElementById("searchBtn").onclick=()=>{
   renderGrid();
 };
 
-// LOAD DATA
+// ✅ LOAD + ALWAYS SHOW FULL GRID LIKE SHUFFLER
 (async()=>{
   const [a,b,c]=await Promise.all([
     fetch(MEDIA_URL).then(r=>r.text()),
@@ -255,6 +249,7 @@ document.getElementById("searchBtn").onclick=()=>{
   catalog=parseCatalogText(a+"\n"+b);
   filteredCatalog=catalog.slice();
   categories=c.split("\n").map(x=>x.trim()).filter(Boolean);
+
   renderGrid();
   renderIdolButtons();
   renderCategoryButtons();
