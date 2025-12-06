@@ -132,7 +132,7 @@
     color: var(--accent-hover);
   }
 
-  /* 🧭 Catalog now full-page grid */
+  /* 🧭 Catalog grid */
   #catalogPanel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -158,7 +158,7 @@
     border-color: var(--accent);
   }
 
-  /* 🌸 Idol buttons (left side) */
+  /* 🌸 Idol buttons */
   #idolButtons {
     position: fixed;
     top: 0;
@@ -239,6 +239,27 @@
     color: var(--accent);
   }
 
+  /* 🖤 Overlay like Idol-Shuffler */
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  #overlay img, #overlay video {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+
 </style>
 </head>
 <body>
@@ -255,17 +276,14 @@
   <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
 </div>
 
-<!-- 🩷 Idol buttons now floating on left -->
 <div id="idolButtons"></div>
-
-<!-- 🌸 Category panel (slides out beside idol buttons) -->
 <div id="categoryPanel"></div>
-
-<!-- Catalog thumbnails now full-page grid -->
 <div id="catalogPanel"></div>
 
+<!-- Overlay -->
+<div id="overlay"></div>
+
 <script>
-// 🖼️ + 🎥 Combined sources
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
@@ -275,7 +293,6 @@ let currentIdolFilter = null;
 let currentCategoryFilter = null;
 let categories = [];
 
-/* DOM */
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
@@ -284,8 +301,8 @@ const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
 const categoryToggle = document.getElementById("categoryToggle");
+const overlay = document.getElementById("overlay");
 
-/* Parser and functions */
 function parseCatalogText(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   return lines.map(line => {
@@ -360,9 +377,20 @@ function renderCatalogThumbnails() {
     img.src = item.thumb || item.raw || item.url;
     img.className = "catalog-thumb";
     img.title = item.folder;
+    img.onclick = () => showOverlay(item.raw);
     catalogPanel.appendChild(img);
   });
 }
+
+function showOverlay(url) {
+  overlay.innerHTML = `<video autoplay loop muted playsinline src="${url}"></video>`;
+  overlay.style.display = "flex";
+}
+
+overlay.addEventListener("click", () => {
+  overlay.style.display = "none";
+  overlay.innerHTML = "";
+});
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
@@ -421,12 +449,8 @@ function toggleCategoryFilter(cat, btn) {
 /* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
-catalogToggle.addEventListener("click", () => {
-  idolButtonsEl.classList.toggle("open");
-});
-categoryToggle.addEventListener("click", () => {
-  categoryPanel.classList.toggle("open");
-});
+catalogToggle.addEventListener("click", () => { idolButtonsEl.classList.toggle("open"); });
+categoryToggle.addEventListener("click", () => { categoryPanel.classList.toggle("open"); });
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
