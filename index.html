@@ -41,9 +41,10 @@
     align-items: center;
     gap: 8px;
     justify-content: center;
-    margin-bottom: 20px;
-    width: 100%;
+    width: 360px; /* combined width of idol + category panels */
+    margin: 0 auto; /* center horizontally */
   }
+
 
   #searchInput {
     flex: 0 0 340px;
@@ -103,13 +104,17 @@
     color: var(--muted);
   }
 
-  /* 🩷 Idol Buttons Panel (left) */
+  /* Container for left panels */
+  #leftPanels {
+    display: flex;
+    flex-direction: row;
+    margin-top: 60px; /* height of the search bar + some spacing */
+  }
+  
+  /* Idol Buttons Panel */
   #idolButtons {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200px;           /* always open */
-    height: 100%;
+    width: 200px;
+    height: calc(100vh - 60px); /* full height minus search bar */
     padding: 10px;
     overflow-y: auto;
     display: flex;
@@ -117,17 +122,13 @@
     gap: 6px;
     background: #111;
     border-right: 1px solid #333;
-    z-index: 999;
     box-sizing: border-box;
   }
   
-  /* 🧭 Category Panel (next to idols) */
+  /* Category Panel */
   #categoryPanel {
-    position: fixed;
-    top: 0;
-    left: 200px;            /* immediately right of idol buttons */
-    width: 160px;           /* always open */
-    height: 100%;
+    width: 160px;
+    height: calc(100vh - 60px); /* full height minus search bar */
     padding: 10px;
     overflow-y: auto;
     display: flex;
@@ -135,9 +136,9 @@
     gap: 6px;
     background: #111;
     border-right: 1px solid #333;
-    z-index: 998;
     box-sizing: border-box;
   }
+
 
 
   /* Hide scrollbars */
@@ -233,8 +234,11 @@
 </div>
 
 <!-- Fixed panels -->
-<div id="idolButtons"></div>
-<div id="categoryPanel"></div>
+<div id="leftPanels">
+  <div id="idolButtons"></div>
+  <div id="categoryPanel"></div>
+</div>
+
 
 <!-- Catalog -->
 <div id="catalogPanel"></div>
