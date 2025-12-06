@@ -344,26 +344,26 @@ function selectFolder(folder) {
 function applyFilters() {
   const term = searchInput.value.trim().toLowerCase();
 
-  // Filter catalog based on current idol, category, AND search term
+  // Step 1: filter based on idol, category, AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    if (term && !item.folder.toLowerCase().includes(term)) return false; // <-- respect search term
+    if (term && !item.folder.toLowerCase().includes(term)) return false;
     return true;
   });
 
-  // Determine buttons to show
-  let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
-  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
+  // Step 2: determine buttons for asymmetric logic, using filteredCatalog instead of catalog
+  let idolsForButtons = [...new Set(filteredCatalog.map(it => it.folder))].sort();
+  let categoriesForButtons = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
 
   if (firstSelection === "idol" && currentIdolFilter) {
-    // Shrink category list to only categories for selected idol
-    categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
+    // Shrink category list to only categories for selected idol, within filteredCatalog
+    categoriesForButtons = [...new Set(filteredCatalog.filter(it => it.folder === currentIdolFilter)
                                              .map(it => it.category)
                                              .filter(Boolean))].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
-    // Shrink idol list to only idols for selected category
-    idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
+    // Shrink idol list to only idols for selected category, within filteredCatalog
+    idolsForButtons = [...new Set(filteredCatalog.filter(it => it.category === currentCategoryFilter)
                                          .map(it => it.folder))].sort();
   }
 
@@ -371,6 +371,7 @@ function applyFilters() {
   renderCategoryButtons(categoriesForButtons);
   renderCatalogThumbnails();
 }
+
 
 
 
