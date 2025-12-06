@@ -371,13 +371,23 @@ function applyFilters() {
     )].sort();
   }
 
-  // Apply search term only to idols; categories stay as visible after search
+  // Apply search term only to idols
   if (currentSearchTerm) {
     idolsForButtons = idolsForButtons.filter(name => name.toLowerCase().includes(currentSearchTerm));
-    if (visibleCategories.length) {
-      categoriesForButtons = visibleCategories.slice(); // keep categories visible after search
-    }
   }
+  
+  // Filter categories to only those visible after search, 
+  // but if an idol is selected, show only that idol's categories
+  if (currentIdolFilter) {
+    categoriesForButtons = [...new Set(
+      catalog.filter(it => it.folder === currentIdolFilter)
+             .map(it => it.category)
+             .filter(Boolean)
+    )].sort();
+  } else if (visibleCategories.length) {
+    categoriesForButtons = visibleCategories.slice(); // keep categories visible after search
+  }
+
 
 
   renderIdolButtons(idolsForButtons);
