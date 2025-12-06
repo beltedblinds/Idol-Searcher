@@ -258,6 +258,8 @@ let currentCategoryFilter = null;
 let categories = [];
 let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
 let currentSearchTerm = "";
+let visibleCategories = []; // stores categories currently visible in the category panel
+
 
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -369,13 +371,14 @@ function applyFilters() {
     )].sort();
   }
 
-  // Apply search term to both buttons
+  // Apply search term only to idols; categories stay as visible after search
   if (currentSearchTerm) {
     idolsForButtons = idolsForButtons.filter(name => name.toLowerCase().includes(currentSearchTerm));
-    categoriesForButtons = categoriesForButtons.filter(cat => 
-      filteredCatalog.some(item => item.category === cat)
-    );
+    if (visibleCategories.length) {
+      categoriesForButtons = visibleCategories.slice(); // keep categories visible after search
+    }
   }
+
 
   renderIdolButtons(idolsForButtons);
   renderCategoryButtons(categoriesForButtons);
@@ -502,6 +505,7 @@ document.addEventListener("click", (e) => {
 function applySearch(term) {
   currentSearchTerm = term.trim().toLowerCase();
   if (!currentSearchTerm) {
+    visibleCategories = []; // reset
     applyFilters(); // reset to current idol/category filters
     return;
   }
@@ -513,12 +517,13 @@ function applySearch(term) {
     return item.folder.toLowerCase().includes(currentSearchTerm);
   });
 
-  // Update available idols and categories based on filtered catalog
-  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
-  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+  // Save the categories visible after search
+  visibleCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
 
+  // Update idols and categories
+  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
   renderIdolButtons(availableIdols);
-  renderCategoryButtons(availableCategories);
+  renderCategoryButtons(visibleCategories);
   renderCatalogThumbnails();
 }
 
