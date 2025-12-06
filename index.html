@@ -20,20 +20,11 @@
     background: var(--bg);
     color: var(--text);
     display: flex;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-
-  /* Sidebar for idols and categories */
-  #sidebar {
-    width: 220px;
-    background: #111;
-    border-right: 1px solid #333;
-    padding: 10px;
-    display: flex;
     flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
   }
 
   h1 {
@@ -48,16 +39,19 @@
   }
 
   .search-container {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    width: 340px;
+    max-width: 95vw;
   }
 
   #searchInput {
     flex: 1;
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px 14px;
+    border-radius: 8px;
     border: 1px solid #333;
     background: var(--card);
     color: var(--text);
@@ -71,8 +65,8 @@
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px 14px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
@@ -86,19 +80,19 @@
 
   #suggestions {
     position: absolute;
-    top: 36px;
+    top: 44px;
     left: 0;
     right: 0;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 8px;
     max-height: 180px;
     overflow-y: auto;
     z-index: 10;
   }
 
   .suggestion {
-    padding: 6px 10px;
+    padding: 8px 12px;
     cursor: pointer;
   }
 
@@ -108,55 +102,45 @@
   }
 
   .no-result {
-    padding: 6px 10px;
+    padding: 8px 12px;
     color: var(--muted);
   }
 
-  /* Idol buttons */
-  #idolButtons {
+  .controls {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
   }
 
-  .idol-btn, .category-btn {
+  .btn, .toggle {
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
     cursor: pointer;
-    text-align: left;
+    font-size: 14px;
     transition: all 0.2s ease;
   }
 
-  .idol-btn:hover, .category-btn:hover {
+  .btn:hover, .toggle:hover {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent-hover);
   }
 
-  .idol-btn.active, .category-btn.active {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* Category buttons */
-  #categoryPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  /* Catalog grid */
+  /* 🧭 Catalog grid */
   #catalogPanel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
-    flex: 1;
+    width: 100%;
+    max-width: 1280px;
     padding: 10px;
+    margin-top: 10px;
     overflow-y: auto;
   }
 
@@ -174,7 +158,88 @@
     border-color: var(--accent);
   }
 
-  /* Overlay */
+  /* 🌸 Idol buttons */
+  #idolButtons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    border-right: none;
+    transition: width 0.3s ease;
+    padding: 0;
+    box-sizing: border-box;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  #idolButtons::-webkit-scrollbar { display: none; }
+  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
+
+  #idolButtons.open {
+    width: 200px;
+    padding: 10px;
+    border-right: 1px solid #333;
+    overflow-y: auto;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .idol-btn {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .idol-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  .idol-btn.active {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .category-btn {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .category-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  .category-btn.active {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* 🖤 Overlay like Idol-Shuffler */
   #overlay {
     position: fixed;
     top: 0;
@@ -194,33 +259,25 @@
     border-radius: 12px;
     object-fit: contain;
   }
-
-  /* Main content area */
-  #mainContent {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding: 20px;
-  }
-
 </style>
 </head>
 <body>
+<h1>💖 K-pop Idol Gallery</h1>
 
-<div id="sidebar">
-  <h1>💖 K-pop Idol Gallery</h1>
-  <div class="search-container">
-    <input id="searchInput" placeholder="Search folder..." />
-    <button id="searchBtn">🔍 Search</button>
-    <div id="suggestions" hidden></div>
-  </div>
-  <div id="idolButtons"></div>
-  <div id="categoryPanel"></div>
+<div class="search-container">
+  <input id="searchInput" placeholder="Search folder..." />
+  <button id="searchBtn">🔍 Search</button>
+  <div id="suggestions" hidden></div>
 </div>
 
-<div id="mainContent">
-  <div id="catalogPanel"></div>
+<div class="controls">
+  <div class="toggle" id="catalogToggle"><span id="catalogLabel">Catalog</span></div>
+  <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
 </div>
+
+<div id="idolButtons"></div>
+<div id="categoryPanel"></div>
+<div id="catalogPanel"></div>
 
 <!-- Overlay -->
 <div id="overlay"></div>
@@ -239,8 +296,10 @@ const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
 const catalogPanel = document.getElementById("catalogPanel");
+const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
+const categoryToggle = document.getElementById("categoryToggle");
 const overlay = document.getElementById("overlay");
 
 function parseCatalogText(text) {
@@ -322,7 +381,7 @@ function renderCatalogThumbnails() {
   });
 }
 
-/* 🎬 Overlay logic */
+/* 🎬 Overlay logic from Idol-Shuffler */
 let overlayVisible = false;
 function toggleOverlay(url) {
   if (overlayVisible) {
@@ -416,6 +475,8 @@ function toggleCategoryFilter(cat, btn) {
 /* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
+catalogToggle.addEventListener("click", () => { idolButtonsEl.classList.toggle("open"); });
+categoryToggle.addEventListener("click", () => { categoryPanel.classList.toggle("open"); });
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
