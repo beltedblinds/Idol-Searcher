@@ -20,16 +20,95 @@
     background: var(--bg);
     color: var(--text);
     display: flex;
+    flex-direction: column;
     height: 100vh;
     overflow: hidden;
   }
 
-  /* Sidebar containing idols and categories */
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+    margin: 10px 0 10px 0;
+    background: linear-gradient(90deg, var(--accent), #b57aff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+  }
+
+  /* Search bar centered at top */
+  #searchContainer {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  #searchInput {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: var(--card);
+    color: var(--text);
+    font-size: 14px;
+    width: 300px;
+    max-width: 90vw;
+    outline: none;
+  }
+
+  #searchInput:focus { border-color: var(--accent); }
+
+  #searchBtn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: var(--card);
+    color: var(--text);
+    cursor: pointer;
+  }
+
+  #suggestions {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  .suggestion, .no-result {
+    padding: 6px 10px;
+  }
+
+  .suggestion:hover {
+    background: #272727;
+    color: var(--accent);
+  }
+
+  /* Main layout: sidebar + catalog */
+  #main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
   #sidebar {
     display: flex;
+    height: 100%;
     background: #111;
     border-right: 1px solid #333;
-    height: 100%;
+    flex-direction: column;
+  }
+
+  /* Idol and category lists stacked horizontally */
+  #lists {
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
   }
 
   #idolButtons, #categoryPanel {
@@ -37,18 +116,22 @@
     flex-direction: column;
     gap: 6px;
     padding: 10px;
-    overflow-y: auto;
-    max-height: 100%;
+    height: 100%;
   }
 
   #idolButtons {
-    width: 200px;
-    border-right: 1px solid #333;
+    width: 160px;
   }
 
   #categoryPanel {
-    width: 200px;
+    width: 160px;
+    border-left: 1px solid #333;
   }
+
+  /* Hide scrollbar like Idol-Shuffler */
+  #idolButtons::-webkit-scrollbar, #categoryPanel::-webkit-scrollbar { display: none; }
+  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
+  #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
 
   /* Catalog panel */
   #catalogPanel {
@@ -79,12 +162,13 @@
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
-    padding: 8px 10px;
-    border-radius: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
+    white-space: nowrap;
   }
 
   .idol-btn:hover, .category-btn:hover {
@@ -119,67 +203,26 @@
     border-radius: 12px;
     object-fit: contain;
   }
-
-  /* Search bar at top of sidebar */
-  #searchContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-  }
-
-  #searchInput {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #333;
-    background: var(--card);
-    color: var(--text);
-    font-size: 14px;
-  }
-
-  #searchBtn {
-    padding: 6px;
-    border-radius: 6px;
-    border: 1px solid #333;
-    background: var(--card);
-    color: var(--text);
-    cursor: pointer;
-  }
-
-  #suggestions {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 6px;
-    max-height: 180px;
-    overflow-y: auto;
-  }
-
-  .suggestion, .no-result {
-    padding: 6px 10px;
-  }
-
-  .suggestion:hover {
-    background: #272727;
-    color: var(--accent);
-  }
-
 </style>
 </head>
 <body>
+<h1>💖 K-pop Idol Gallery</h1>
 
-<div id="sidebar">
-  <div id="idolButtonsWrapper">
-    <div id="searchContainer">
-      <input id="searchInput" placeholder="Search folder..." />
-      <button id="searchBtn">🔍 Search</button>
-      <div id="suggestions" hidden></div>
-    </div>
-    <div id="idolButtons"></div>
-  </div>
-  <div id="categoryPanel"></div>
+<div id="searchContainer">
+  <input id="searchInput" placeholder="Search folder..." />
+  <button id="searchBtn">🔍 Search</button>
+  <div id="suggestions" hidden></div>
 </div>
 
-<div id="catalogPanel"></div>
+<div id="main">
+  <div id="sidebar">
+    <div id="lists">
+      <div id="idolButtons"></div>
+      <div id="categoryPanel"></div>
+    </div>
+  </div>
+  <div id="catalogPanel"></div>
+</div>
 
 <!-- Overlay -->
 <div id="overlay"></div>
@@ -211,9 +254,7 @@ function parseCatalogText(text) {
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function getCurrentPool() {
-  return filteredCatalog.length ? filteredCatalog : catalog;
-}
+function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : catalog; }
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
@@ -288,9 +329,7 @@ function toggleOverlay(url) {
     overlayVisible = false;
     return;
   }
-
   overlay.innerHTML = "";
-
   let media;
   if (url.match(/\.(mp4|webm|mov)$/i)) {
     media = document.createElement("video");
@@ -304,7 +343,6 @@ function toggleOverlay(url) {
     media = document.createElement("img");
     media.src = url;
   }
-
   overlay.appendChild(media);
   overlay.style.display = "flex";
   overlayVisible = true;
@@ -336,7 +374,6 @@ function toggleCatalogIdol(folderName, btn) {
     renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
-
   currentIdolFilter = folderName;
   [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -363,7 +400,6 @@ function toggleCategoryFilter(cat, btn) {
     renderCategoryButtons(categories);
     return;
   }
-
   currentCategoryFilter = cat;
   [...categoryPanel.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
