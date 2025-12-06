@@ -341,29 +341,24 @@ function selectFolder(folder) {
 
 
 function applyFilters() {
-  // Filter catalog for thumbnails
+  // Filter catalog based on current idol and category filters
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
     return true;
   });
 
-  // Update buttons lists with shrinking
-  const idolsToShow = currentCategoryFilter
-    ? [...new Set(catalog.filter(it => it.category === currentCategoryFilter).map(it => it.folder))]
-    : null;
+  // Calculate available idols and categories based on filteredCatalog
+  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
+  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
 
-  const categoriesToShow = currentIdolFilter
-    ? [...new Set(catalog.filter(it => it.folder === currentIdolFilter).map(it => it.category).filter(Boolean))]
-    : null;
+  // Re-render buttons with only the available options
+  renderIdolButtons(availableIdols);
+  renderCategoryButtons(availableCategories);
 
-  renderIdolButtons(idolsToShow);
-  renderCategoryButtons(categoriesToShow);
-
-  // Render catalog thumbnails
+  // Render thumbnails
   renderCatalogThumbnails();
 }
-
 
 
 function renderCatalogThumbnails() {
@@ -414,8 +409,8 @@ overlay.addEventListener("click", () => {
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
-  const names = list ? [...new Set(list)] : [...new Set(catalog.map(it => it.folder))];
-  names.sort().forEach(name => {
+  const names = list || [...new Set(catalog.map(it => it.folder))];
+  names.forEach(name => {
     const btn = document.createElement("button");
     btn.className = "idol-btn";
     btn.textContent = name;
@@ -445,8 +440,8 @@ function toggleCatalogIdol(folderName, btn) {
 
 function renderCategoryButtons(list = null) {
   categoryPanel.innerHTML = "";
-  const cats = list ? [...new Set(list).filter(Boolean)] : [...new Set(catalog.map(it => it.category).filter(Boolean))];
-  cats.sort().forEach(cat => {
+  const cats = list || [...new Set(catalog.map(it => it.category).filter(Boolean))];
+  cats.forEach(cat => {
     const btn = document.createElement("button");
     btn.className = "category-btn";
     btn.textContent = cat;
@@ -458,7 +453,6 @@ function renderCategoryButtons(list = null) {
     categoryPanel.appendChild(btn);
   });
 }
-
 
 
 function toggleCategoryFilter(cat, btn) {
