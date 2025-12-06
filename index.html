@@ -341,13 +341,16 @@ function selectFolder(folder) {
 }
 
 
-function applyFilters() {
+function applyFilters(term = "") {
+  term = term.trim().toLowerCase();
   // Filter catalog based on current idol and category filters
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (term && !item.folder.toLowerCase().includes(term)) return false;
     return true;
   });
+
 
   // Determine buttons to show
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
@@ -487,10 +490,8 @@ document.addEventListener("click", (e) => {
 
 function applySearch(term) {
   term = term.trim().toLowerCase();
-  if (!term) {
-    applyFilters(); // reset to current idol/category filters
-    return;
-  }
+  applyFilters(term); // now filters idols, categories, AND search term
+}
 
   // Filter catalog based on current filters AND search term
   filteredCatalog = catalog.filter(item => {
