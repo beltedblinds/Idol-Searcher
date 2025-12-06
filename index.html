@@ -21,67 +21,79 @@
     color: var(--text);
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
   }
 
   h1 {
     font-size: 28px;
     font-weight: 700;
     text-align: center;
-    margin: 10px 0 10px 0;
+    margin-bottom: 20px;
     background: linear-gradient(90deg, var(--accent), #b57aff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 1px;
   }
 
-  /* Search bar centered at top */
-  #searchContainer {
+  .search-container {
+    position: relative;
     display: flex;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    width: 340px;
+    max-width: 95vw;
   }
 
   #searchInput {
-    padding: 8px;
-    border-radius: 6px;
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
     border: 1px solid #333;
     background: var(--card);
     color: var(--text);
     font-size: 14px;
-    width: 300px;
-    max-width: 90vw;
     outline: none;
   }
 
   #searchInput:focus { border-color: var(--accent); }
 
   #searchBtn {
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #333;
     background: var(--card);
+    border: 1px solid #333;
     color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+  }
+
+  #searchBtn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
   }
 
   #suggestions {
     position: absolute;
-    top: 48px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 44px;
+    left: 0;
+    right: 0;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 8px;
     max-height: 180px;
     overflow-y: auto;
     z-index: 10;
   }
 
-  .suggestion, .no-result {
-    padding: 6px 10px;
+  .suggestion {
+    padding: 8px 12px;
+    cursor: pointer;
   }
 
   .suggestion:hover {
@@ -89,57 +101,46 @@
     color: var(--accent);
   }
 
-  /* Main layout: sidebar + catalog */
-  #main {
+  .no-result {
+    padding: 8px 12px;
+    color: var(--muted);
+  }
+
+  .controls {
     display: flex;
-    flex: 1;
-    overflow: hidden;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
   }
 
-  #sidebar {
-    display: flex;
-    height: 100%;
-    background: #111;
-    border-right: 1px solid #333;
-    flex-direction: column;
+  .btn, .toggle {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
   }
 
-  /* Idol and category lists stacked horizontally */
-  #lists {
-    display: flex;
-    flex-direction: row;
-    overflow: hidden;
+  .btn:hover, .toggle:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
   }
 
-  #idolButtons, #categoryPanel {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    height: 100%;
-  }
-
-  #idolButtons {
-    width: 160px;
-  }
-
-  #categoryPanel {
-    width: 160px;
-    border-left: 1px solid #333;
-  }
-
-  /* Hide scrollbar like Idol-Shuffler */
-  #idolButtons::-webkit-scrollbar, #categoryPanel::-webkit-scrollbar { display: none; }
-  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
-  #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* Catalog panel */
+  /* 🧭 Catalog grid */
   #catalogPanel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
+    width: 100%;
+    max-width: 1280px;
     padding: 10px;
-    flex: 1;
+    margin-top: 10px;
     overflow-y: auto;
   }
 
@@ -157,33 +158,88 @@
     border-color: var(--accent);
   }
 
-  /* Buttons */
-  .idol-btn, .category-btn {
+  /* 🌸 Idol buttons */
+  #idolButtons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    border-right: none;
+    transition: width 0.3s ease;
+    padding: 0;
+    box-sizing: border-box;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  #idolButtons::-webkit-scrollbar { display: none; }
+  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
+
+  #idolButtons.open {
+    width: 200px;
+    padding: 10px;
+    border-right: 1px solid #333;
+    overflow-y: auto;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .idol-btn {
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
-    padding: 6px 8px;
-    border-radius: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
     font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: left;
-    white-space: nowrap;
   }
 
-  .idol-btn:hover, .category-btn:hover {
+  .idol-btn:hover {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent-hover);
   }
 
-  .idol-btn.active, .category-btn.active {
+  .idol-btn.active {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent);
   }
 
-  /* Overlay */
+  .category-btn {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .category-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
+
+  .category-btn.active {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* 🖤 Overlay like Idol-Shuffler */
   #overlay {
     position: fixed;
     top: 0;
@@ -208,21 +264,20 @@
 <body>
 <h1>💖 K-pop Idol Gallery</h1>
 
-<div id="searchContainer">
+<div class="search-container">
   <input id="searchInput" placeholder="Search folder..." />
   <button id="searchBtn">🔍 Search</button>
   <div id="suggestions" hidden></div>
 </div>
 
-<div id="main">
-  <div id="sidebar">
-    <div id="lists">
-      <div id="idolButtons"></div>
-      <div id="categoryPanel"></div>
-    </div>
-  </div>
-  <div id="catalogPanel"></div>
+<div class="controls">
+  <div class="toggle" id="catalogToggle"><span id="catalogLabel">Catalog</span></div>
+  <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
 </div>
+
+<div id="idolButtons"></div>
+<div id="categoryPanel"></div>
+<div id="catalogPanel"></div>
 
 <!-- Overlay -->
 <div id="overlay"></div>
@@ -241,8 +296,10 @@ const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
 const catalogPanel = document.getElementById("catalogPanel");
+const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
+const categoryToggle = document.getElementById("categoryToggle");
 const overlay = document.getElementById("overlay");
 
 function parseCatalogText(text) {
@@ -254,7 +311,9 @@ function parseCatalogText(text) {
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : catalog; }
+function getCurrentPool() {
+  return filteredCatalog.length ? filteredCatalog : catalog;
+}
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
@@ -295,6 +354,7 @@ function selectFolder(folder) {
   if (!filteredCatalog.length) filteredCatalog = catalog.filter(it => it.folder.toLowerCase().includes(match));
   suggestionsEl.hidden = true;
   searchInput.value = folder;
+
   applyFilters();
   renderCatalogThumbnails();
 }
@@ -321,6 +381,7 @@ function renderCatalogThumbnails() {
   });
 }
 
+/* 🎬 Overlay logic from Idol-Shuffler */
 let overlayVisible = false;
 function toggleOverlay(url) {
   if (overlayVisible) {
@@ -329,7 +390,9 @@ function toggleOverlay(url) {
     overlayVisible = false;
     return;
   }
+
   overlay.innerHTML = "";
+
   let media;
   if (url.match(/\.(mp4|webm|mov)$/i)) {
     media = document.createElement("video");
@@ -343,6 +406,7 @@ function toggleOverlay(url) {
     media = document.createElement("img");
     media.src = url;
   }
+
   overlay.appendChild(media);
   overlay.style.display = "flex";
   overlayVisible = true;
@@ -374,6 +438,7 @@ function toggleCatalogIdol(folderName, btn) {
     renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
+
   currentIdolFilter = folderName;
   [...idolButtonsEl.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
@@ -400,14 +465,18 @@ function toggleCategoryFilter(cat, btn) {
     renderCategoryButtons(categories);
     return;
   }
+
   currentCategoryFilter = cat;
   [...categoryPanel.children].forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
   applyFilters();
 }
 
+/* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
+catalogToggle.addEventListener("click", () => { idolButtonsEl.classList.toggle("open"); });
+categoryToggle.addEventListener("click", () => { categoryPanel.classList.toggle("open"); });
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
@@ -415,6 +484,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
+/* Load catalog */
 async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
   const txt1 = await res1.text();
