@@ -7,11 +7,12 @@
 
 <style>
     :root {
-        --bg: #0d0d0d;
-        --card: #1b1b1b;
+        --bg: #0e0e0e;
+        --panel: #111;
+        --card: #1a1a1a;
         --accent: #ff7bcb;
-        --accent-hover: #ff94d8;
-        --text: #f1f1f1;
+        --accent-soft: #ff9ed6;
+        --text: #f5f5f5;
     }
 
     body {
@@ -21,107 +22,109 @@
         font-family: "Poppins", sans-serif;
         display: flex;
         height: 100vh;
+        overflow: hidden;
     }
 
-    /* ───────────────────── Panels (MATCHES IDOL SHUFFLER) ───────────────────── */
-
+    /* ───────────────────────────
+       LEFT PANELS (Same layout as Idol Shuffler)
+       ─────────────────────────── */
     #idolPanel {
-        width: 200px;
-        background: #111;
-        border-right: 1px solid #333;
+        width: 210px;
+        background: var(--panel);
+        border-right: 1px solid #2a2a2a;
         padding: 10px;
         overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
     }
 
     #categoryPanel {
-        width: 160px;
-        background: #111;
-        border-right: 1px solid #333;
+        width: 170px;
+        background: var(--panel);
+        border-right: 1px solid #2a2a2a;
         padding: 10px;
         overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
     }
 
     h2 {
-        font-size: 16px;
-        margin: 10px 0 4px;
+        margin: 10px 0 6px;
+        font-size: 15px;
         color: var(--accent);
     }
 
     .side-btn {
         background: var(--card);
-        border: 1px solid #333;
-        padding: 8px 10px;
+        border: 1px solid #2d2d2d;
+        padding: 8px;
+        margin-bottom: 6px;
         border-radius: 8px;
-        width: 100%;
         color: var(--text);
+        width: 100%;
         cursor: pointer;
         font-size: 13px;
-        text-align: left;
         transition: 0.2s;
+        text-align: left;
     }
 
     .side-btn:hover {
-        background: #272727;
+        background: #262626;
         border-color: var(--accent);
-        color: var(--accent-hover);
+        color: var(--accent-soft);
     }
 
     .side-btn.active {
-        background: #272727;
+        background: #2b2b2b;
         border-color: var(--accent);
         color: var(--accent);
     }
 
-    /* ───────────────────── Thumbnails (EXACT IDOL SHUFFLER STYLE) ───────────────────── */
+    /* ───────────────────────────
+       TRUE IDOL-SHUFFLER THUMBNAIL CSS
+       ─────────────────────────── */
 
     #gallery {
         flex: 1;
         overflow-y: auto;
         padding: 20px;
         display: grid;
-        gap: 14px;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* identical behavior */
+        background: var(--bg);
     }
 
     .thumb {
-        width: 100%;
-        aspect-ratio: 1 / 1; /* square just like saved thumbnails */
-        background: #111;
-        border-radius: 10px;
+        background: var(--card);
+        border-radius: 12px;
         border: 1px solid #333;
         overflow: hidden;
         cursor: pointer;
-        transition: transform 0.2s, border-color 0.2s;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
     }
 
     .thumb:hover {
-        transform: scale(1.07);
+        transform: scale(1.04);
         border-color: var(--accent);
+        box-shadow: 0 0 10px rgba(255, 122, 203, 0.45);
     }
 
-    .thumb img, 
+    /* Natural-sized thumbnails — EXACT Shuffler behavior */
+    .thumb img,
     .thumb video {
         width: 100%;
-        height: 100%;
-        object-fit: cover;
+        height: auto;
+        object-fit: cover;  /* same as shuffler */
+        display: block;
     }
 
-    /* ───────────────────── Modal viewer ───────────────────── */
-
+    /* ───────────────────────────
+       VIEWER
+       ─────────────────────────── */
     #viewer {
         position: fixed;
         inset: 0;
         display: none;
         justify-content: center;
         align-items: center;
-        background: rgba(0,0,0,0.9);
-        z-index: 200;
+        background: rgba(0,0,0,0.88);
+        z-index: 999;
     }
 
     #viewerContent img,
@@ -137,17 +140,19 @@
         top: 20px;
         right: 30px;
         background: #000;
-        padding: 6px 12px;
+        padding: 7px 14px;
+        color: white;
         border: 1px solid #555;
         border-radius: 6px;
-        color: #fff;
         cursor: pointer;
+        font-size: 15px;
     }
+
 </style>
 </head>
 <body>
 
-<!-- LEFT PANELS – SAME STRUCTURE AS IDOL SHUFFLER -->
+<!-- PANELS -->
 <div id="idolPanel">
     <h2>Idols</h2>
     <div id="idolList"></div>
@@ -158,7 +163,7 @@
     <div id="categoryList"></div>
 </div>
 
-<!-- THUMBNAIL GALLERY -->
+<!-- GALLERY -->
 <div id="gallery"></div>
 
 <!-- VIEWER -->
@@ -168,7 +173,7 @@
 </div>
 
 <script>
-/* DATA SOURCES (same as Idol-Shuffler) */
+/* Data sources */
 const MEDIA1 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA2 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 const CATFILE = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
@@ -179,24 +184,32 @@ let categories = [];
 let currentIdol = null;
 let currentCategory = null;
 
-/* ELEMENTS */
+/* Elements */
 const idolList = document.getElementById("idolList");
 const categoryList = document.getElementById("categoryList");
 const gallery = document.getElementById("gallery");
 
 const viewer = document.getElementById("viewer");
 const viewerContent = document.getElementById("viewerContent");
-document.getElementById("closeViewer").onclick = () => (viewer.style.display = "none");
+document.getElementById("closeViewer").onclick = () => viewer.style.display = "none";
 
-/* PARSER */
-function parse(text) {
-    return text.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
-        const p = l.split(",").map(x => x.trim());
-        return { folder: p[0], raw: p[1], thumb: p[2], category: p[3] || "" };
-    });
+/* Parse catalog line */
+function parse(txt) {
+    return txt.split("\n")
+        .map(l => l.trim())
+        .filter(Boolean)
+        .map(line => {
+            const p = line.split(",").map(x => x.trim());
+            return {
+                folder: p[0],
+                raw: p[1],
+                thumb: p[2],
+                category: p[3] || ""
+            };
+        });
 }
 
-/* LOAD DATA */
+/* Load data */
 async function loadCatalog() {
     const [r1, r2] = await Promise.all([fetch(MEDIA1), fetch(MEDIA2)]);
     const [t1, t2] = await Promise.all([r1.text(), r2.text()]);
@@ -205,42 +218,42 @@ async function loadCatalog() {
 }
 
 async function loadCategories() {
-    const txt = await (await fetch(CATFILE)).text();
-    categories = txt.split("\n").map(x => x.trim()).filter(Boolean);
+    const t = await (await fetch(CATFILE)).text();
+    categories = t.split("\n").map(x => x.trim()).filter(Boolean);
     buildCategoryButtons();
 }
 
-/* PANELS */
+/* Sidebar buttons */
 function buildIdolButtons() {
     idolList.innerHTML = "";
     const idols = [...new Set(catalog.map(x => x.folder))];
 
     idols.forEach(name => {
-        const btn = document.createElement("button");
-        btn.className = "side-btn";
-        btn.textContent = name;
-        btn.onclick = () => selectIdol(name, btn);
-        idolList.appendChild(btn);
+        const b = document.createElement("button");
+        b.className = "side-btn";
+        b.textContent = name;
+        b.onclick = () => selectIdol(name, b);
+        idolList.appendChild(b);
     });
 }
 
 function buildCategoryButtons() {
     categoryList.innerHTML = "";
     categories.forEach(cat => {
-        const btn = document.createElement("button");
-        btn.className = "side-btn";
-        btn.textContent = cat;
-        btn.onclick = () => selectCategory(cat, btn);
-        categoryList.appendChild(btn);
+        const b = document.createElement("button");
+        b.className = "side-btn";
+        b.textContent = cat;
+        b.onclick = () => selectCategory(cat, b);
+        categoryList.appendChild(b);
     });
 }
 
-function highlight(group, activeBtn) {
+function highlight(group, active) {
     [...group.children].forEach(b => b.classList.remove("active"));
-    if (activeBtn) activeBtn.classList.add("active");
+    if (active) active.classList.add("active");
 }
 
-/* FILTER SELECTORS */
+/* Selection */
 function selectIdol(name, btn) {
     currentIdol = name;
     currentCategory = null;
@@ -257,7 +270,7 @@ function selectCategory(cat, btn) {
     renderGallery();
 }
 
-/* RENDER THUMBNAILS (MATCHES IDOL SHUFFLER STYLE) */
+/* Render thumbnails */
 function renderGallery() {
     gallery.innerHTML = "";
 
@@ -275,21 +288,21 @@ function renderGallery() {
             : `<img src="${item.thumb || item.raw}">`;
 
         div.onclick = () => openViewer(item);
-
         gallery.appendChild(div);
     });
 }
 
-/* VIEWER */
+/* Viewer */
 function openViewer(item) {
     viewer.style.display = "flex";
+
     const isVideo = /\.(mp4|webm|mov)$/i.test(item.raw);
     viewerContent.innerHTML = isVideo
-        ? `<video src="${item.raw}" autoplay controls></video>`
+        ? `<video src="${item.raw}" controls autoplay></video>`
         : `<img src="${item.raw}">`;
 }
 
-/* INIT */
+/* Init */
 loadCatalog();
 loadCategories();
 </script>
