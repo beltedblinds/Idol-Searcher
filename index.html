@@ -112,32 +112,46 @@
     overflow: hidden;
   }
 
-  /* Sidebar with idols and categories */
-  #sidebar {
-    display: flex;
-    flex-direction: row;
-    gap: 1px;
-    background: #111;
-    border-right: 1px solid #333;
-  }
-
-  #idolButtons, #categoryPanel {
+  /* 🩷 Idol buttons panel (left) */
+  #idolButtons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100%;
+    padding: 10px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 10px;
-    height: 100vh;
-    overflow-y: auto;
+    background: #111;
+    border-right: 1px solid #333;
+    z-index: 999;
   }
-
-  /* Widths for lists */
-  #idolButtons { width: 160px; }
-  #categoryPanel { width: 160px; border-left: 1px solid #333; }
-
+  
+  /* 🧭 Category panel (next to idols) */
+  #categoryPanel {
+    position: fixed;
+    top: 0;
+    left: 200px; /* will shift if idols panel changes width dynamically */
+    width: 160px;
+    height: 100%;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #111;
+    border-right: 1px solid #333;
+    z-index: 998;
+  }
+  
   /* Hide scrollbars */
-  #idolButtons::-webkit-scrollbar, #categoryPanel::-webkit-scrollbar { display: none; }
+  #idolButtons::-webkit-scrollbar,
+  #categoryPanel::-webkit-scrollbar { display: none; }
   #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
   #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
+
 
   /* Catalog panel */
   #catalogPanel {
@@ -145,9 +159,11 @@
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
     padding: 10px;
-    flex: 1;
+    padding-left: 220px;  /* width of idolButtons + some space */
+    padding-right: 180px; /* width of categoryPanel + some space */
     overflow-y: auto;
   }
+
 
   .catalog-thumb {
     width: 100%;
@@ -220,13 +236,7 @@
   <div id="suggestions" hidden></div>
 </div>
 
-<div id="main">
-  <div id="sidebar">
-    <div id="idolButtons"></div>
-    <div id="categoryPanel"></div>
-  </div>
-  <div id="catalogPanel"></div>
-</div>
+<div id="catalogPanel"></div>
 
 <!-- Overlay -->
 <div id="overlay"></div>
