@@ -257,6 +257,7 @@ let currentIdolFilter = null;
 let currentCategoryFilter = null;
 let categories = [];
 let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
+let currentSearchTerm = "";
 
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -342,10 +343,11 @@ function selectFolder(folder) {
 
 
 function applyFilters() {
-  // Filter catalog based on current idol and category filters
+  // Filter catalog based on current idol/category filters AND current search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentSearchTerm && !item.folder.toLowerCase().includes(currentSearchTerm)) return false;
     return true;
   });
 
@@ -354,20 +356,24 @@ function applyFilters() {
   let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
 
   if (firstSelection === "idol" && currentIdolFilter) {
-    // Shrink category list to only categories for selected idol
     categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
-                                             .map(it => it.category)
-                                             .filter(Boolean))].sort();
+                                         .map(it => it.category)
+                                         .filter(Boolean))].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
-    // Shrink idol list to only idols for selected category
     idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
-                                         .map(it => it.folder))].sort();
+                                       .map(it => it.folder))].sort();
+  }
+
+  // Also filter buttons by current search term
+  if (currentSearchTerm) {
+    idolsForButtons = idolsForButtons.filter(name => name.toLowerCase().includes(currentSearchTerm));
   }
 
   renderIdolButtons(idolsForButtons);
   renderCategoryButtons(categoriesForButtons);
   renderCatalogThumbnails();
 }
+
 
 
 
@@ -486,8 +492,8 @@ document.addEventListener("click", (e) => {
 });
 
 function applySearch(term) {
-  term = term.trim().toLowerCase();
-  if (!term) {
+  currentSearchTerm = term.trim().toLowerCase();
+  if (!currentSearchTerm) {
     applyFilters(); // reset to current idol/category filters
     return;
   }
@@ -496,7 +502,7 @@ function applySearch(term) {
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return item.folder.toLowerCase().includes(term);
+    return item.folder.toLowerCase().includes(currentSearchTerm);
   });
 
   // Update available idols and categories based on filtered catalog
