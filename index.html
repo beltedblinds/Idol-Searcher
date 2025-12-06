@@ -21,7 +21,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding: 20px 20px 20px 400px; /* ✅ space for 2 side panels */
+  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -58,6 +58,21 @@ h1 {
   padding: 10px 14px;
 }
 
+.controls {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.toggle {
+  background: var(--card);
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
 /* ✅ MAIN GRID VIEW */
 #thumbGrid {
   display: grid;
@@ -72,6 +87,7 @@ h1 {
   overflow: hidden;
   border: 1px solid #333;
   cursor: pointer;
+  height: 120px; /* consistent thumbnail height */
 }
 
 .grid-item:hover {
@@ -93,9 +109,12 @@ h1 {
   font-size: 12px;
   padding: 4px;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ✅ ALWAYS-OPEN SIDE PANELS (SHUFFLER STYLE) */
+/* Side Panels */
 #idolButtons, #categoryPanel {
   position: fixed;
   top: 0;
@@ -103,19 +122,13 @@ h1 {
   background: #111;
   overflow-y: auto;
   padding: 10px;
-  width: 200px;
-  z-index: 999;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-#idolButtons::-webkit-scrollbar,
-#categoryPanel::-webkit-scrollbar {
+  width: 180px;
   display: none;
+  z-index: 999;
 }
 
-#idolButtons { left: 0; border-right: 1px solid #333; }
-#categoryPanel { left: 200px; border-right: 1px solid #333; }
+#idolButtons { left: 0; }
+#categoryPanel { right: 0; }
 
 .idol-btn, .category-btn {
   width: 100%;
@@ -126,6 +139,7 @@ h1 {
   padding: 6px;
   border-radius: 6px;
   cursor: pointer;
+  text-align: left;
 }
 
 .idol-btn.active, .category-btn.active {
@@ -144,9 +158,15 @@ h1 {
   <button id="searchBtn">Search</button>
 </div>
 
+<div class="controls">
+  <span class="toggle" id="catalogToggle">Idols</span>
+  <span class="toggle" id="categoryToggle">Categories</span>
+</div>
+
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
 
+<!-- ✅ MAIN THUMB GRID -->
 <div id="thumbGrid"></div>
 
 <script>
@@ -164,28 +184,42 @@ const grid = document.getElementById("thumbGrid");
 const idolButtons = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
 
-/* ✅ NORMALIZED PARSER (fixes 25 vs 30 bug safely) */
+/* PARSE + NORMALIZE + SORT: keeps same behavior/order as Idol-Shuffler */
 function parseCatalogText(text) {
-  return text.split("\n").map(l=>{
-    const p=l.split(",").map(x=>x.trim());
-    const folder = (p[0]||"").replace(/\s+/g," ").trim();
-    const raw = (p[1]||"").trim();
-    const thumb = (p[2]||"").trim();
-    const category = (p[3]||"").replace(/\s+/g," ").trim();
-    return {folder,raw,thumb,category};
-  }).filter(x=>x.folder&&x.raw&&x.thumb);
+  const entries = text.split("\n")
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => {
+      const p = l.split(",").map(x => (x || "").trim());
+      // normalize folder and category (collapse whitespace)
+      const folder = (p[0] || "").replace(/\s+/g, " ").trim();
+      const raw = (p[1] || "").trim();
+      const thumb = (p[2] || "").trim();
+      const category = (p[3] || "").replace(/\s+/g, " ").trim();
+      return { folder, raw, thumb, category };
+    })
+    .filter(e => e.folder && e.raw && e.thumb);
+
+  // sort by folder (locale) then by raw URL so order is stable and matches Shuffler style
+  entries.sort((a, b) => {
+    const f = a.folder.localeCompare(b.folder, undefined, { sensitivity: 'base' });
+    return f !== 0 ? f : (a.raw || "").localeCompare(b.raw || "");
+  });
+
+  return entries;
 }
 
 function renderGrid() {
-  grid.innerHTML="";
-  filteredCatalog.forEach(it=>{
-    const d=document.createElement("div");
-    d.className="grid-item";
-    const isVid=/\.(mp4|webm|mov)$/i.test(it.raw);
-    d.innerHTML= isVid
-      ? `<video src="${it.raw}" muted loop></video>`
-      : `<img src="${it.thumb}">`;
-    d.innerHTML+=`<div class="grid-label">${it.folder}</div>`;
+  grid.innerHTML = "";
+  filteredCatalog.forEach(it => {
+    const d = document.createElement("div");
+    d.className = "grid-item";
+    const isVid = /\.(mp4|webm|mov)$/i.test(it.raw);
+    const src = it.thumb || it.raw;
+    d.innerHTML = isVid
+      ? `<video src="${it.raw}" muted loop playsinline></video>`
+      : `<img src="${src}" alt="${it.folder}">`;
+    d.innerHTML += `<div class="grid-label" title="${it.folder}">${it.folder}</div>`;
     grid.appendChild(d);
   });
 }
@@ -194,9 +228,12 @@ function applyFilters() {
   const idolNorm = currentIdolFilter ? currentIdolFilter.toLowerCase() : "";
   const catNorm = currentCategoryFilter ? currentCategoryFilter.toLowerCase() : "";
 
-  filteredCatalog = catalog.filter(it=>{
-    const idolMatch = !idolNorm || it.folder.toLowerCase() === idolNorm;
-    const catMatch = !catNorm || it.category.toLowerCase() === catNorm;
+  filteredCatalog = catalog.filter(it => {
+    const folderNorm = (it.folder || "").toLowerCase();
+    const categoryNorm = (it.category || "").toLowerCase();
+
+    const idolMatch = !idolNorm || folderNorm === idolNorm;
+    const catMatch = !catNorm || categoryNorm === catNorm;
     return idolMatch && catMatch;
   });
 
@@ -204,52 +241,63 @@ function applyFilters() {
 }
 
 function renderIdolButtons() {
-  idolButtons.innerHTML = "<b>Idols</b><br><br>";
-  [...new Set(catalog.map(i=>i.folder))].sort().forEach(name=>{
-    const b=document.createElement("button");
-    b.className="idol-btn" + (currentIdolFilter===name ? " active" : "");
-    b.textContent=name;
-    b.onclick=()=>{
-      currentIdolFilter=name;
-      renderIdolButtons();
-      applyFilters();
-    }
+  // preserve the sorted order: take the first occurrence order from catalog
+  const seen = new Set();
+  const ordered = [];
+  catalog.forEach(it => {
+    const f = it.folder;
+    if (!seen.has(f)) { seen.add(f); ordered.push(f); }
+  });
+
+  idolButtons.innerHTML = "";
+  ordered.forEach(name => {
+    const b = document.createElement("button");
+    b.className = "idol-btn" + (currentIdolFilter === name ? " active" : "");
+    b.textContent = name;
+    b.onclick = () => { currentIdolFilter = name; applyFilters(); renderIdolButtons(); };
     idolButtons.appendChild(b);
   });
 }
 
 function renderCategoryButtons() {
-  categoryPanel.innerHTML = "<b>Categories</b><br><br>";
-  categories.forEach(cat=>{
-    const b=document.createElement("button");
-    b.className="category-btn" + (currentCategoryFilter===cat ? " active" : "");
-    b.textContent=cat;
-    b.onclick=()=>{
-      currentCategoryFilter=cat;
-      renderCategoryButtons();
-      applyFilters();
-    }
+  // categories array preserves categories.txt order; show only those present if you want
+  categoryPanel.innerHTML = "";
+  categories.forEach(cat => {
+    const b = document.createElement("button");
+    b.className = "category-btn" + (currentCategoryFilter === cat ? " active" : "");
+    b.textContent = cat;
+    b.onclick = () => { currentCategoryFilter = cat; applyFilters(); renderCategoryButtons(); };
     categoryPanel.appendChild(b);
   });
 }
 
-document.getElementById("searchBtn").onclick=()=>{
-  const term=document.getElementById("searchInput").value.toLowerCase();
-  filteredCatalog=catalog.filter(i=>i.folder.toLowerCase().includes(term));
+document.getElementById("catalogToggle").onclick = () => {
+  idolButtons.style.display = idolButtons.style.display === "block" ? "none" : "block";
+};
+
+document.getElementById("categoryToggle").onclick = () => {
+  categoryPanel.style.display = categoryPanel.style.display === "block" ? "none" : "block";
+};
+
+document.getElementById("searchBtn").onclick = () => {
+  const term = document.getElementById("searchInput").value.toLowerCase();
+  filteredCatalog = catalog.filter(i => i.folder.toLowerCase().includes(term));
   renderGrid();
 };
 
-// ✅ LOAD + ALWAYS SHOW FULL GRID LIKE SHUFFLER
-(async()=>{
-  const [a,b,c]=await Promise.all([
-    fetch(MEDIA_URL).then(r=>r.text()),
-    fetch(MEDIA_URL_02).then(r=>r.text()),
-    fetch(CAT_URL).then(r=>r.text())
+// LOAD DATA: parse, normalize, and sort to mirror Idol-Shuffler ordering
+(async () => {
+  const [a, b, c] = await Promise.all([
+    fetch(MEDIA_URL).then(r => r.text()),
+    fetch(MEDIA_URL_02).then(r => r.text()),
+    fetch(CAT_URL).then(r => r.text())
   ]);
-  catalog=parseCatalogText(a+"\n"+b);
-  filteredCatalog=catalog.slice();
-  categories=c.split("\n").map(x=>x.trim()).filter(Boolean);
 
+  catalog = parseCatalogText((a || "") + "\n" + (b || ""));
+  filteredCatalog = catalog.slice();
+  categories = (c || "").split("\n").map(x => x.trim()).filter(Boolean);
+
+  // initial render: full grid in the same sorted order as Idol-Shuffler
   renderGrid();
   renderIdolButtons();
   renderCategoryButtons();
