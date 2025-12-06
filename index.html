@@ -3,233 +3,262 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>🎵 Idol Searcher</title>
+<title>🔎 Idol Searcher</title>
+
 <style>
+:root {
+  --bg: radial-gradient(circle at top, #141414 0%, #0a0a0a 100%);
+  --card: #1b1b1b;
+  --accent: #ff7bcb;
+  --accent-hover: #ff94d8;
+  --text: #f4f4f4;
+  --muted: #aaa;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #0c0c0c;
-  color: #eee;
-}
-
-/* ===== LEFT PANELS ===== */
-#idolButtons {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 200px;
-  background: #111;
-  border-right: 1px solid #333;
-  overflow-y: auto;
-  padding: 10px;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
   box-sizing: border-box;
-  z-index: 999;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-#idolButtons::-webkit-scrollbar { display: none; }
 
-#categoryButtons {
-  position: fixed;
-  top: 0;
-  left: 200px;
-  height: 100%;
-  width: 200px;
-  background: #141414;
-  border-right: 1px solid #333;
-  overflow-y: auto;
+h1 {
+  text-align: center;
+  background: linear-gradient(90deg, var(--accent), #b57aff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.search-container {
+  display: flex;
+  gap: 8px;
+  width: 360px;
+  max-width: 95vw;
+  margin: 0 auto 15px;
+}
+
+#searchInput {
+  flex: 1;
   padding: 10px;
-  box-sizing: border-box;
-  z-index: 998;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-#categoryButtons::-webkit-scrollbar { display: none; }
-
-/* ===== MAIN PANEL ===== */
-#mainPanel {
-  margin-left: 400px;
-  padding: 15px;
-}
-
-#searchBar {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  margin-bottom: 15px;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: var(--card);
   border: 1px solid #333;
-  background: #111;
-  color: #fff;
+  color: var(--text);
 }
 
-#grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-}
-
-.thumb {
-  width: 100%;
+#searchBtn {
+  background: var(--card);
+  border: 1px solid #333;
+  color: var(--text);
   border-radius: 8px;
   cursor: pointer;
-  background: #000;
+  padding: 10px 14px;
 }
 
-button {
-  width: 100%;
-  margin-bottom: 6px;
-  padding: 6px;
-  background: #222;
-  color: #eee;
+.controls {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.toggle {
+  background: var(--card);
   border: 1px solid #333;
-  border-radius: 6px;
-  text-align: left;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+/* ✅ MAIN GRID VIEW */
+#thumbGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.grid-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #333;
   cursor: pointer;
 }
-button.active {
-  background: #444;
+
+.grid-item:hover {
+  border-color: var(--accent);
 }
 
-#counter {
-  margin-bottom: 10px;
-  opacity: 0.8;
+.grid-item img, .grid-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grid-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,.65);
+  font-size: 12px;
+  padding: 4px;
+  text-align: center;
+}
+
+/* Side Panels */
+#idolButtons, #categoryPanel {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  background: #111;
+  overflow-y: auto;
+  padding: 10px;
+  width: 180px;
+  display: none;
+  z-index: 999;
+}
+
+#idolButtons { left: 0; }
+#categoryPanel { right: 0; }
+
+.idol-btn, .category-btn {
+  width: 100%;
+  margin-bottom: 6px;
+  background: var(--card);
+  border: 1px solid #333;
+  color: var(--text);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.idol-btn.active, .category-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 </style>
 </head>
+
 <body>
 
-<div id="idolButtons"></div>
-<div id="categoryButtons"></div>
+<h1>🔎 Idol Searcher</h1>
 
-<div id="mainPanel">
-  <input id="searchBar" placeholder="Search..." />
-  <div id="counter"></div>
-  <div id="grid"></div>
+<div class="search-container">
+  <input id="searchInput" placeholder="Search idol..." />
+  <button id="searchBtn">Search</button>
 </div>
 
+<div class="controls">
+  <span class="toggle" id="catalogToggle">Idols</span>
+  <span class="toggle" id="categoryToggle">Categories</span>
+</div>
+
+<div id="idolButtons"></div>
+<div id="categoryPanel"></div>
+
+<!-- ✅ MAIN THUMB GRID -->
+<div id="thumbGrid"></div>
+
 <script>
+const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
+const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
+const CAT_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
+
 let catalog = [];
 let filteredCatalog = [];
+let categories = [];
 let currentIdolFilter = null;
 let currentCategoryFilter = null;
 
-/* ======= NORMALIZED PARSER (FIXES 25 vs 30 BUG) ======= */
+const grid = document.getElementById("thumbGrid");
+const idolButtons = document.getElementById("idolButtons");
+const categoryPanel = document.getElementById("categoryPanel");
+
 function parseCatalogText(text) {
   return text.split("\n").map(l=>{
-    const p = l.split(",").map(x => x.trim());
-    const folder = (p[0] || "").replace(/\s+/g, " ").trim();
-    const raw = (p[1] || "").trim();
-    const thumb = (p[2] || "").trim();
-    const category = (p[3] || "").replace(/\s+/g, " ").trim();
-    return { folder, raw, thumb, category };
-  }).filter(x => x.folder && x.raw && x.thumb);
+    const p=l.split(",").map(x=>x.trim());
+    return {folder:p[0],raw:p[1],thumb:p[2],category:p[3]||""};
+  }).filter(x=>x.folder&&x.raw&&x.thumb);
 }
 
-/* ======= FILTERING ======= */
+function renderGrid() {
+  grid.innerHTML="";
+  filteredCatalog.forEach(it=>{
+    const d=document.createElement("div");
+    d.className="grid-item";
+    const isVid=/\.(mp4|webm|mov)$/i.test(it.raw);
+    d.innerHTML= isVid
+      ? `<video src="${it.raw}" muted loop></video>`
+      : `<img src="${it.thumb}">`;
+    d.innerHTML+=`<div class="grid-label">${it.folder}</div>`;
+    grid.appendChild(d);
+  });
+}
+
 function applyFilters() {
-  const idolNorm = currentIdolFilter ? currentIdolFilter.trim().toLowerCase() : "";
-  const catNorm = currentCategoryFilter ? currentCategoryFilter.trim().toLowerCase() : "";
-
-  filteredCatalog = catalog.filter(it => {
-    const folderNormalized = (it.folder || "").trim().toLowerCase();
-    const categoryNormalized = (it.category || "").trim().toLowerCase();
-
-    const idolMatch = !idolNorm || folderNormalized === idolNorm;
-    const catMatch = !catNorm || categoryNormalized === catNorm;
+  filteredCatalog = catalog.filter(it=>{
+    const idolMatch = !currentIdolFilter || it.folder===currentIdolFilter;
+    const catMatch = !currentCategoryFilter || it.category===currentCategoryFilter;
     return idolMatch && catMatch;
   });
-
   renderGrid();
 }
 
-/* ======= RENDER IDOLS ======= */
 function renderIdolButtons() {
-  const map = {};
-  catalog.forEach(it => {
-    const key = it.folder;
-    map[key] = (map[key] || 0) + 1;
-  });
-
-  const host = document.getElementById("idolButtons");
-  host.innerHTML = "<b>Idols</b><br><br>";
-
-  Object.keys(map).sort().forEach(idol => {
-    const btn = document.createElement("button");
-    btn.textContent = `${idol} (${map[idol]})`;
-    if (currentIdolFilter === idol) btn.classList.add("active");
-    btn.onclick = () => {
-      currentIdolFilter = idol;
-      renderIdolButtons();
-      applyFilters();
-    };
-    host.appendChild(btn);
+  idolButtons.innerHTML="";
+  [...new Set(catalog.map(i=>i.folder))].forEach(name=>{
+    const b=document.createElement("button");
+    b.className="idol-btn";
+    b.textContent=name;
+    b.onclick=()=>{currentIdolFilter=name;applyFilters();}
+    idolButtons.appendChild(b);
   });
 }
 
-/* ======= RENDER CATEGORIES ======= */
 function renderCategoryButtons() {
-  const map = {};
-  catalog.forEach(it => {
-    if (!it.category) return;
-    map[it.category] = (map[it.category] || 0) + 1;
-  });
-
-  const host = document.getElementById("categoryButtons");
-  host.innerHTML = "<b>Categories</b><br><br>";
-
-  Object.keys(map).sort().forEach(cat => {
-    const btn = document.createElement("button");
-    btn.textContent = `${cat} (${map[cat]})`;
-    if (currentCategoryFilter === cat) btn.classList.add("active");
-    btn.onclick = () => {
-      currentCategoryFilter = cat;
-      renderCategoryButtons();
-      applyFilters();
-    };
-    host.appendChild(btn);
+  categoryPanel.innerHTML="";
+  categories.forEach(cat=>{
+    const b=document.createElement("button");
+    b.className="category-btn";
+    b.textContent=cat;
+    b.onclick=()=>{currentCategoryFilter=cat;applyFilters();}
+    categoryPanel.appendChild(b);
   });
 }
 
-/* ======= GRID ======= */
-function renderGrid() {
-  const grid = document.getElementById("grid");
-  const counter = document.getElementById("counter");
-  counter.textContent = `${filteredCatalog.length} items`; 
-  grid.innerHTML = "";
+document.getElementById("catalogToggle").onclick=()=>{
+  idolButtons.style.display = idolButtons.style.display==="block"?"none":"block";
+};
 
-  filteredCatalog.forEach(it => {
-    const img = document.createElement("img");
-    img.src = it.thumb;
-    img.className = "thumb";
-    img.onclick = () => window.open(it.raw, "_blank");
-    grid.appendChild(img);
-  });
-}
+document.getElementById("categoryToggle").onclick=()=>{
+  categoryPanel.style.display = categoryPanel.style.display==="block"?"none":"block";
+};
 
-/* ======= SEARCH ======= */
-const searchBar = document.getElementById("searchBar");
-searchBar.oninput = () => {
-  const q = searchBar.value.toLowerCase();
-  filteredCatalog = catalog.filter(it =>
-    it.folder.toLowerCase().includes(q) ||
-    it.category.toLowerCase().includes(q)
-  );
+document.getElementById("searchBtn").onclick=()=>{
+  const term=document.getElementById("searchInput").value.toLowerCase();
+  filteredCatalog=catalog.filter(i=>i.folder.toLowerCase().includes(term));
   renderGrid();
 };
 
-/* ======= LOAD DATA ======= */
-fetch("catalog.txt")
-  .then(r => r.text())
-  .then(text => {
-    catalog = parseCatalogText(text);
-    filteredCatalog = catalog.slice();
-
-    renderIdolButtons();
-    renderCategoryButtons();
-    applyFilters();
-  });
+// LOAD DATA
+(async()=>{
+  const [a,b,c]=await Promise.all([
+    fetch(MEDIA_URL).then(r=>r.text()),
+    fetch(MEDIA_URL_02).then(r=>r.text()),
+    fetch(CAT_URL).then(r=>r.text())
+  ]);
+  catalog=parseCatalogText(a+"\n"+b);
+  filteredCatalog=catalog.slice();
+  categories=c.split("\n").map(x=>x.trim()).filter(Boolean);
+  renderGrid();
+  renderIdolButtons();
+  renderCategoryButtons();
+})();
 </script>
 </body>
 </html>
