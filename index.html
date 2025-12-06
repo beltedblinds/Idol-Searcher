@@ -259,7 +259,6 @@ let categories = [];
 let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
 let currentSearchTerm = "";
 let visibleCategories = []; // stores categories currently visible in the category panel
-let orderedCategories = []; // stores the original order of categories
 
 
 const searchInput = document.getElementById("searchInput");
@@ -356,26 +355,25 @@ function applyFilters() {
 
   // Determine buttons to show
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
-  let categoriesForButtons = orderedCategories.slice(); // always use original order
+  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
 
   // Apply asymmetric filtering
   if (firstSelection === "idol" && currentIdolFilter) {
-    categoriesForButtons = orderedCategories.filter(cat =>
-      catalog.some(it => it.folder === currentIdolFilter && it.category === cat)
-    );
+    categoriesForButtons = [...new Set(
+      catalog.filter(it => it.folder === currentIdolFilter)
+             .map(it => it.category)
+             .filter(Boolean)
+    )].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
     idolsForButtons = [...new Set(
       catalog.filter(it => it.category === currentCategoryFilter)
              .map(it => it.folder)
     )].sort();
   }
-  
-  // Apply search term only to idols; categories stay as visible after search
+
+  // Apply search term only to idols
   if (currentSearchTerm) {
     idolsForButtons = idolsForButtons.filter(name => name.toLowerCase().includes(currentSearchTerm));
-    if (visibleCategories.length) {
-      categoriesForButtons = orderedCategories.filter(cat => visibleCategories.includes(cat));
-    }
   }
   
   // Filter categories to only those visible after search, 
@@ -548,8 +546,6 @@ async function loadCatalog() {
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
   categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
-  orderedCategories = categories.slice(); // preserve original order
-
 
   renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
