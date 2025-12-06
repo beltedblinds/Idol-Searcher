@@ -21,7 +21,7 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding: 20px;
+  padding: 20px 20px 20px 380px; /* ✅ space for always-open panels */
   box-sizing: border-box;
 }
 
@@ -58,21 +58,6 @@ h1 {
   padding: 10px 14px;
 }
 
-.controls {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.toggle {
-  background: var(--card);
-  border: 1px solid #333;
-  color: var(--text);
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 0 4px;
-}
-
 /* ✅ MAIN GRID VIEW */
 #thumbGrid {
   display: grid;
@@ -89,9 +74,7 @@ h1 {
   cursor: pointer;
 }
 
-.grid-item:hover {
-  border-color: var(--accent);
-}
+.grid-item:hover { border-color: var(--accent); }
 
 .grid-item img, .grid-item video {
   width: 100%;
@@ -110,21 +93,35 @@ h1 {
   text-align: center;
 }
 
-/* Side Panels */
-#idolButtons, #categoryPanel {
+/* ✅ ALWAYS-OPEN IDOL PANEL */
+#idolButtons {
   position: fixed;
   top: 0;
+  left: 0;
   height: 100%;
+  width: 200px;
   background: #111;
+  border-right: 1px solid #333;
   overflow-y: auto;
   padding: 10px;
-  width: 180px;
-  display: none;
+  box-sizing: border-box;
   z-index: 999;
 }
 
-#idolButtons { left: 0; }
-#categoryPanel { right: 0; }
+/* ✅ ALWAYS-OPEN CATEGORY PANEL NEXT TO IT */
+#categoryPanel {
+  position: fixed;
+  top: 0;
+  left: 200px;
+  height: 100%;
+  width: 180px;
+  background: #111;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  z-index: 998;
+}
 
 .idol-btn, .category-btn {
   width: 100%;
@@ -132,9 +129,17 @@ h1 {
   background: var(--card);
   border: 1px solid #333;
   color: var(--text);
-  padding: 6px;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
   cursor: pointer;
+  text-align: left;
+}
+
+.idol-btn:hover, .category-btn:hover {
+  background: #272727;
+  border-color: var(--accent);
+  color: var(--accent-hover);
 }
 
 .idol-btn.active, .category-btn.active {
@@ -153,11 +158,7 @@ h1 {
   <button id="searchBtn">Search</button>
 </div>
 
-<div class="controls">
-  <span class="toggle" id="catalogToggle">Idols</span>
-  <span class="toggle" id="categoryToggle">Categories</span>
-</div>
-
+<!-- ✅ ALWAYS VISIBLE PANELS -->
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
 
@@ -215,7 +216,8 @@ function renderIdolButtons() {
     const b=document.createElement("button");
     b.className="idol-btn";
     b.textContent=name;
-    b.onclick=()=>{currentIdolFilter=name;applyFilters();}
+    if (currentIdolFilter===name) b.classList.add("active");
+    b.onclick=()=>{currentIdolFilter=name;applyFilters();renderIdolButtons();};
     idolButtons.appendChild(b);
   });
 }
@@ -226,18 +228,11 @@ function renderCategoryButtons() {
     const b=document.createElement("button");
     b.className="category-btn";
     b.textContent=cat;
-    b.onclick=()=>{currentCategoryFilter=cat;applyFilters();}
+    if (currentCategoryFilter===cat) b.classList.add("active");
+    b.onclick=()=>{currentCategoryFilter=cat;applyFilters();renderCategoryButtons();};
     categoryPanel.appendChild(b);
   });
 }
-
-document.getElementById("catalogToggle").onclick=()=>{
-  idolButtons.style.display = idolButtons.style.display==="block"?"none":"block";
-};
-
-document.getElementById("categoryToggle").onclick=()=>{
-  categoryPanel.style.display = categoryPanel.style.display==="block"?"none":"block";
-};
 
 document.getElementById("searchBtn").onclick=()=>{
   const term=document.getElementById("searchInput").value.toLowerCase();
