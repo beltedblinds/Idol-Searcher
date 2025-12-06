@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>K-pop Idol Gallery</title>
+<title>K-pop Idol Searcher</title>
 
 <style>
 :root {
@@ -17,170 +17,119 @@
 
 body {
   margin: 0;
-  font-family: "Poppins", "Segoe UI", sans-serif;
+  font-family: Poppins, Segoe UI, sans-serif;
   background: var(--bg);
   color: var(--text);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
 }
 
 h1 {
-  font-size: 28px;
-  font-weight: 700;
   text-align: center;
-  margin-bottom: 20px;
   background: linear-gradient(90deg, var(--accent), #b57aff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.search-container {
-  position: relative;
-  width: 340px;
-  max-width: 95vw;
-  margin-bottom: 20px;
-}
-
-#searchInput {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: var(--card);
-  color: var(--text);
-}
-
-.image-wrapper {
-  position: relative;
-  max-width: 92vw;
-  max-height: 78vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-radius: 16px;
-  background: #111;
-}
-
-#label {
-  margin-top: 12px;
-  font-size: 15px;
-  color: var(--muted);
-}
-
-/* ✅ ALWAYS OPEN LEFT IDOL LIST */
+/* ✅ Always-open layout */
 #idolButtons {
   position: fixed;
-  top: 0;
   left: 0;
+  top: 0;
   width: 200px;
   height: 100%;
-  background: #111;
-  border-right: 1px solid #333;
   padding: 10px;
-  box-sizing: border-box;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  background: #111;
   overflow-y: auto;
-  scrollbar-width: none;
-}
-#idolButtons::-webkit-scrollbar { display: none; }
-
-.idol-btn {
-  background: var(--card);
-  border: 1px solid #333;
-  color: var(--text);
-  padding: 8px;
-  border-radius: 8px;
-  text-align: left;
-  cursor: pointer;
-}
-.idol-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-right: 1px solid #333;
 }
 
-/* ✅ ALWAYS OPEN CATEGORY PANEL */
 #categoryPanel {
   position: fixed;
-  top: 0;
   left: 200px;
+  top: 0;
   width: 160px;
   height: 100%;
-  background: #111;
-  border-right: 1px solid #333;
   padding: 10px;
-  box-sizing: border-box;
-  z-index: 998;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  background: #111;
   overflow-y: auto;
+  border-right: 1px solid #333;
 }
 
-.category-btn {
+#catalogPanel {
+  margin-left: 360px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+/* ✅ Wide scrolling thumbnail grid */
+.catalog-thumb {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  border: 1px solid #333;
+}
+
+.catalog-thumb:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+/* ✅ Preview Player */
+.image-wrapper {
+  margin-left: 360px;
+  margin-top: 20px;
+  max-width: calc(100vw - 380px);
+  display: flex;
+  justify-content: center;
+}
+
+.image-wrapper img,
+.image-wrapper video {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 16px;
+}
+
+.idol-btn, .category-btn {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 8px;
+  border-radius: 8px;
   background: var(--card);
   border: 1px solid #333;
   color: var(--text);
-  padding: 8px;
-  border-radius: 8px;
-  text-align: left;
   cursor: pointer;
 }
-.category-btn.active {
+
+.idol-btn:hover,
+.category-btn:hover {
+  border-color: var(--accent);
+}
+
+.active {
   border-color: var(--accent);
   color: var(--accent);
-}
-
-/* ✅ ALWAYS OPEN CATALOG */
-#catalogPanel {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 280px;
-  height: 100%;
-  background: #111;
-  border-left: 1px solid #333;
-  padding: 10px;
-  overflow-y: auto;
-  z-index: 999;
-}
-
-.catalog-thumb {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  border: 1px solid #333;
-}
-.catalog-thumb:hover {
-  border-color: var(--accent);
 }
 </style>
 </head>
 
 <body>
-
-<h1>💖 K-pop Idol Gallery</h1>
-
-<div class="search-container">
-  <input id="searchInput" placeholder="Search folder..." />
-</div>
+<h1>🔍 Idol-Searcher</h1>
 
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
+
 <div id="catalogPanel"></div>
 
 <div class="image-wrapper">
   <img id="idolImage" />
 </div>
-<div id="label"></div>
 
 <script>
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
@@ -188,109 +137,104 @@ const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Catego
 const CAT_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
 
 let catalog = [];
-let filteredCatalog = [];
+let filtered = [];
 let categories = [];
-let currentIdolFilter = null;
-let currentCategoryFilter = null;
+let currentIdol = null;
+let currentCat = null;
 
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
 const catalogPanel = document.getElementById("catalogPanel");
-const imgEl = document.getElementById("idolImage");
-const labelEl = document.getElementById("label");
-const searchInput = document.getElementById("searchInput");
+const imageEl = document.getElementById("idolImage");
 
-/* ✅ NORMALIZED PARSER (fixes 25 vs 30 bug) */
-function parseCatalogText(text) {
-  return text.split("\n").map(l=>{
-    const p = l.split(",").map(x => x.trim());
-    return {
-      folder: (p[0]||"").trim(),
-      raw: (p[1]||"").trim(),
-      thumb: (p[2]||"").trim(),
-      category: (p[3]||"").trim()
-    };
-  }).filter(x=>x.folder && x.raw && x.thumb);
+/* ✅ Parser unchanged */
+function parse(text) {
+  return text.split("\n").map(l => {
+    const [folder, raw, thumb, category] = l.split(",");
+    return {folder, raw, thumb, category};
+  }).filter(x => x.raw && x.thumb);
 }
 
-function applyFilters() {
-  const term = searchInput.value.trim().toLowerCase();
-  filteredCatalog = catalog.filter(it=>{
-    const idolMatch = !currentIdolFilter || it.folder.toLowerCase() === currentIdolFilter.toLowerCase();
-    const catMatch = !currentCategoryFilter || it.category.toLowerCase() === currentCategoryFilter.toLowerCase();
-    const searchMatch = !term || it.folder.toLowerCase().includes(term);
-    return idolMatch && catMatch && searchMatch;
-  });
-  renderCatalogThumbnails();
+/* ✅ Click thumbnail = play EXACT media */
+function displayMedia(url) {
+  imageEl.outerHTML = "";
+  let el;
+  if (url.match(/\.(mp4|webm|mov)$/i)) {
+    el = document.createElement("video");
+    el.autoplay = true;
+    el.loop = true;
+    el.muted = true;
+    el.controls = true;
+  } else {
+    el = document.createElement("img");
+  }
+  el.id = "idolImage";
+  el.src = url;
+  document.querySelector(".image-wrapper").appendChild(el);
 }
 
-function renderCatalogThumbnails() {
+/* ✅ Render grid */
+function renderCatalog() {
   catalogPanel.innerHTML = "";
-  filteredCatalog.forEach(item=>{
+  filtered.forEach(item => {
     const img = document.createElement("img");
-    img.src = item.thumb || item.raw;
+    img.src = item.thumb;
     img.className = "catalog-thumb";
-    img.title = item.folder;
-    img.onclick = () => {
-      imgEl.src = item.raw;
-      labelEl.textContent = item.folder;
-    };
+    img.onclick = () => displayMedia(item.raw);
     catalogPanel.appendChild(img);
   });
 }
 
-function renderIdolButtons() {
+/* ✅ Idol buttons */
+function renderIdols() {
   idolButtonsEl.innerHTML = "";
-  [...new Set(catalog.map(it=>it.folder))].forEach(name=>{
-    const btn = document.createElement("button");
-    btn.className = "idol-btn";
-    btn.textContent = name;
-    btn.onclick = ()=>{
-      currentIdolFilter = currentIdolFilter===name ? null : name;
-      renderIdolButtons();
+  [...new Set(catalog.map(i => i.folder))].forEach(name => {
+    const b = document.createElement("button");
+    b.className = "idol-btn";
+    b.textContent = name;
+    b.onclick = () => {
+      currentIdol = name;
       applyFilters();
     };
-    if (currentIdolFilter===name) btn.classList.add("active");
-    idolButtonsEl.appendChild(btn);
+    idolButtonsEl.appendChild(b);
   });
 }
 
-function renderCategoryButtons() {
+/* ✅ Categories */
+function renderCategories() {
   categoryPanel.innerHTML = "";
-  categories.forEach(cat=>{
-    const btn = document.createElement("button");
-    btn.className = "category-btn";
-    btn.textContent = cat;
-    btn.onclick = ()=>{
-      currentCategoryFilter = currentCategoryFilter===cat ? null : cat;
-      renderCategoryButtons();
+  categories.forEach(cat => {
+    const b = document.createElement("button");
+    b.className = "category-btn";
+    b.textContent = cat;
+    b.onclick = () => {
+      currentCat = cat;
       applyFilters();
     };
-    if (currentCategoryFilter===cat) btn.classList.add("active");
-    categoryPanel.appendChild(btn);
+    categoryPanel.appendChild(b);
   });
 }
 
-async function loadAll() {
-  const [r1,r2,rc] = await Promise.all([
-    fetch(MEDIA_URL), fetch(MEDIA_URL_02), fetch(CAT_URL)
-  ]);
-  const t1 = await r1.text();
-  const t2 = await r2.text();
-  const tc = await rc.text();
-
-  catalog = parseCatalogText(t1+"\n"+t2);
-  categories = tc.split("\n").map(x=>x.trim()).filter(Boolean);
-
-  filteredCatalog = catalog.slice();
-  renderIdolButtons();
-  renderCategoryButtons();
-  renderCatalogThumbnails();
+function applyFilters() {
+  filtered = catalog.filter(i =>
+    (!currentIdol || i.folder === currentIdol) &&
+    (!currentCat || i.category === currentCat)
+  );
+  renderCatalog();
 }
 
-searchInput.oninput = applyFilters;
-loadAll();
-</script>
+/* ✅ Load everything */
+async function load() {
+  const [a, b, c] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02), fetch(CAT_URL)]);
+  catalog = parse(await a.text() + "\n" + await b.text());
+  categories = (await c.text()).trim().split("\n");
+  filtered = catalog;
+  renderIdols();
+  renderCategories();
+  renderCatalog();
+}
 
+load();
+</script>
 </body>
 </html>
