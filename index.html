@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>K-pop Idol Gallery</title>
+<title>Idol Searcher</title>
 <style>
   :root {
-    --bg: radial-gradient(circle at top, #141414 0%, #0a0a0a 100%);
+    --bg: #111;
     --card: #1b1b1b;
     --accent: #ff7bcb;
     --accent-hover: #ff94d8;
-    --text: #f4f4f4;
+    --text: #eee;
     --muted: #aaa;
   }
 
@@ -19,14 +19,16 @@
     font-family: "Poppins", "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     min-height: 100vh;
+    padding: 20px;
     box-sizing: border-box;
   }
 
   h1 {
     font-size: 28px;
-    font-weight: 700;
-    text-align: center;
     margin-bottom: 20px;
     background: linear-gradient(90deg, var(--accent), #b57aff);
     -webkit-background-clip: text;
@@ -34,19 +36,13 @@
     letter-spacing: 1px;
   }
 
-  /* Search bar above panels */
   .search-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 340px; /* combined width of idol + category panels */
+    position: relative;
     display: flex;
-    align-items: center;
     gap: 8px;
-    padding: 10px;
-    background: #111;
-    border-bottom: 1px solid #333;
-    z-index: 1001;
+    margin-bottom: 20px;
+    width: 340px;
+    max-width: 95vw;
   }
 
   #searchInput {
@@ -57,10 +53,7 @@
     background: var(--card);
     color: var(--text);
     font-size: 14px;
-    outline: none;
   }
-
-  #searchInput:focus { border-color: var(--accent); }
 
   #searchBtn {
     background: var(--card);
@@ -69,461 +62,369 @@
     padding: 10px 14px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 14px;
-  }
-
-  #searchBtn:hover {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent-hover);
   }
 
   #suggestions {
     position: absolute;
     top: 44px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
     background: #1a1a1a;
     border: 1px solid #333;
     border-radius: 8px;
     max-height: 180px;
     overflow-y: auto;
-    z-index: 1002;
+    z-index: 10;
   }
 
   .suggestion {
     padding: 8px 12px;
     cursor: pointer;
   }
+  .suggestion:hover { background: #272727; color: var(--accent); }
+  .no-result { padding: 8px 12px; color: var(--muted); }
 
-  .suggestion:hover {
-    background: #272727;
-    color: var(--accent);
-  }
-
-  .no-result {
-    padding: 8px 12px;
-    color: var(--muted);
-  }
-
-  /* Idol Buttons Panel (left) */
-  #idolButtons {
-    position: fixed;
-    top: 60px; /* below search bar (search bar height ~50px) */
-    left: 0;
-    width: 200px;
-    height: calc(100% - 50px);
-    padding: 10px;
-    padding-bottom: 20px;
-    overflow-y: auto;
+  .controls {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    background: #111;
-    border-right: 1px solid #333;
-    z-index: 999;
-    box-sizing: border-box;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .btn, .toggle {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
   }
 
-  /* Category Panel (next to idols) */
-  #categoryPanel {
-    position: fixed;
-    top: 60px; /* below search bar */
-    left: 200px;
-    width: 160px;
-    height: calc(100% - 50px);
-    padding: 10px;
-    overflow-y: auto;
+  .btn:hover, .toggle:hover { background: #272727; border-color: var(--accent); color: var(--accent-hover); }
+
+  .image-wrapper {
+    position: relative;
+    max-width: 92vw;
+    max-height: 78vh;
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 16px;
     background: #111;
-    border-right: 1px solid #333;
-    z-index: 998;
-    box-sizing: border-box;
   }
 
-  /* Hide scrollbars */
-  #idolButtons::-webkit-scrollbar,
-  #categoryPanel::-webkit-scrollbar { display: none; }
-  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
-  #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
+  #idolImage, .media-element {
+    max-width: 100%;
+    max-height: 78vh;
+    border-radius: 16px;
+  }
 
-  /* Catalog panel */
-  #catalogPanel {
-    position: fixed;
-    top: 0;
-    left: 360px;
-    right: 0;
-    bottom: 0;
-    padding: 10px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  #saveBtn {
+    position: absolute;
+    top: 12px; left: 12px;
+    z-index: 2;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+  }
+  #saveBtn.saved { color: var(--accent); background: rgba(255,123,203,0.2); }
+
+  #label { margin-top: 12px; font-size: 15px; color: var(--muted); }
+
+  #savedList {
+    margin-top: 22px;
+    display: flex;
+    flex-wrap: wrap;
     gap: 12px;
-    overflow-y: auto;
-    box-sizing: border-box;
+    justify-content: center;
   }
+
+  .saved-item {
+    position: relative;
+    width: 96px; height: 96px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #333;
+    background: #111;
+  }
+  .saved-item:hover { transform: scale(1.07); border-color: var(--accent); }
+  .saved-item img, .saved-item video { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .saved-badge {
+    position: absolute;
+    top: 6px; left: 6px;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 6px;
+    font-size: 12px;
+    border-radius: 999px;
+  }
+
+  #catalogPanel, #idolButtons, #categoryPanel {
+    position: fixed;
+    top: 0; height: 100%;
+    overflow-y: auto;
+    background: #111;
+    padding: 0;
+    transition: all 0.3s ease;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  #catalogPanel { right: 0; width: 0; border-left: none; }
+  #catalogPanel.open { width: 280px; padding: 10px; border-left: 1px solid #333; visibility: visible; pointer-events: auto; }
+
+  #idolButtons { left: 0; width: 0; display: flex; flex-direction: column; gap: 6px; border-right: none; }
+  #idolButtons.open { width: 200px; padding: 10px; border-right: 1px solid #333; visibility: visible; pointer-events: auto; }
+
+  #categoryPanel { left: 0; width: 0; flex-direction: column; gap: 6px; border-right: none; }
+  #categoryPanel.open { width: 160px; padding: 10px; border-right: 1px solid #333; visibility: visible; pointer-events: auto; }
 
   .catalog-thumb {
-    width: 100%;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s, border-color 0.2s;
-    border: 1px solid #333;
-    object-fit: cover;
+    width: 100%; border-radius: 8px; margin-bottom: 8px; cursor: pointer; border: 1px solid #333;
   }
+  .catalog-thumb:hover { transform: scale(1.03); border-color: var(--accent); }
 
-  .catalog-thumb:hover {
-    transform: scale(1.05);
-    border-color: var(--accent);
-  }
-
-  /* Buttons */
   .idol-btn, .category-btn {
     background: var(--card);
     border: 1px solid #333;
     color: var(--text);
     padding: 8px 10px;
     border-radius: 8px;
-    font-size: 13px;
     cursor: pointer;
-    transition: all 0.2s ease;
     text-align: left;
-    white-space: nowrap;
   }
-
-  .idol-btn:hover, .category-btn:hover {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent-hover);
-  }
-
-  .idol-btn.active, .category-btn.active {
-    background: #272727;
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* Overlay */
-  #overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-
-  #overlay img, #overlay video {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 12px;
-    object-fit: contain;
-  }
+  .idol-btn:hover, .category-btn:hover { background: #272727; border-color: var(--accent); color: var(--accent-hover); }
+  .idol-btn.active, .category-btn.active { background: #272727; border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
+<h1>💖 Idol Searcher</h1>
 
-<!-- Search bar above panels -->
 <div class="search-container">
   <input id="searchInput" placeholder="Search folder..." />
-  <button id="searchBtn">🔍 Search</button>
+  <button id="searchBtn">🔍</button>
   <div id="suggestions" hidden></div>
 </div>
 
-<!-- Fixed panels -->
+<div class="controls">
+  <button class="btn" id="prevBtn">Previous</button>
+  <button class="btn" id="randomBtn">Random</button>
+  <div class="toggle" id="cycleToggle"><span id="cycleLabel">Cycle Off</span></div>
+  <div class="toggle" id="savedModeToggle"><span id="savedModeLabel">Saved Mode: Off</span></div>
+  <div class="toggle" id="catalogToggle"><span id="catalogLabel">Catalog</span></div>
+  <div class="toggle" id="categoryToggle"><span id="categoryLabel">Categories</span></div>
+</div>
+
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
 
-<!-- Catalog -->
+<div class="image-wrapper">
+  <button id="saveBtn">💾</button>
+</div>
+
+<div id="label"></div>
+<div id="savedList"></div>
 <div id="catalogPanel"></div>
 
-<!-- Overlay -->
-<div id="overlay"></div>
-
 <script>
-// --- JS remains the same ---
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
+const CAT_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
 
-let catalog = [];
-let filteredCatalog = [];
-let currentIdolFilter = null;
-let currentCategoryFilter = null;
-let categories = [];
-let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
+let catalog = [], filteredCatalog = [], saved = [], history = [], historyPos=-1;
+let savedIndex=0, savedMode=false, cycleId=null, catalogOpen=false, categoryOpen=false;
+let currentIdolFilter=null, currentCategoryFilter=null, seenImages=new Set(), currentMediaUrl="";
 
+const imgWrapper = document.querySelector(".image-wrapper");
+const labelEl = document.getElementById("label");
+const savedListEl = document.getElementById("savedList");
+const randomBtn = document.getElementById("randomBtn");
+const prevBtn = document.getElementById("prevBtn");
+const cycleToggle = document.getElementById("cycleToggle");
+const cycleLabel = document.getElementById("cycleLabel");
+const saveBtn = document.getElementById("saveBtn");
+const savedModeToggle = document.getElementById("savedModeToggle");
+const savedModeLabel = document.getElementById("savedModeLabel");
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
 const catalogPanel = document.getElementById("catalogPanel");
+const catalogToggle = document.getElementById("catalogToggle");
 const idolButtonsEl = document.getElementById("idolButtons");
 const categoryPanel = document.getElementById("categoryPanel");
-const overlay = document.getElementById("overlay");
+const categoryToggle = document.getElementById("categoryToggle");
 
+let categories = [];
+
+/* -------------------- Helpers -------------------- */
 function parseCatalogText(text) {
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
-  return lines.map(line => {
-    const parts = line.split(",").map(p => p.trim());
-    return { folder: parts[0], raw: parts[1], thumb: parts[2], category: parts[3] || ""};
-  }).filter(e => e.folder && e.raw && e.thumb)
+  return text.split("\n").map(l=>l.trim()).filter(Boolean)
+    .map(line => {
+      const [folder, raw, thumb, category] = line.split(",").map(p=>p.trim());
+      return {folder, raw, thumb, category: category||""};
+    }).filter(e=>e.folder && e.raw && e.thumb)
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : catalog; }
-
-function handleSearch(input) {
-  const term = input.trim().toLowerCase();
-  const pool = catalog.filter(item => {
-    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return true;
-  });
-
-  if (!term) {
-    filteredCatalog = pool;
-    const availableIdols = [...new Set(pool.map(it => it.folder))].sort();
-    const availableCategories = [...new Set(pool.map(it => it.category).filter(Boolean))].sort();
-    renderIdolButtons(availableIdols);
-    renderCategoryButtons(availableCategories);
-    renderCatalogThumbnails();
-    suggestionsEl.hidden = true;
-    return;
+function displayUrl(url, folder="", pushHist=true){
+  if(!url) return;
+  imgWrapper.innerHTML=""; imgWrapper.appendChild(saveBtn);
+  let media;
+  if(url.match(/\.(mp4|webm|mov)$/i)){
+    media = document.createElement("video");
+    media.src = url; media.autoplay=true; media.loop=true; media.muted=true; media.playsInline=true;
+  } else {
+    media = document.createElement("img"); media.src=url;
   }
-
-  // Suggest folders that match the search term within the current pool
-  const matches = [...new Set(pool.map(it => it.folder))].filter(f =>
-    f.toLowerCase().includes(term)
-  );
-  showSuggestions(matches, term);
+  media.className="media-element"; imgWrapper.appendChild(media);
+  labelEl.textContent=folder;
+  currentMediaUrl=url;
+  saveBtn.classList.toggle("saved", !!saved.find(s=>s.url===url));
+  if(pushHist && (!history.length || history[history.length-1]!==url)) {history.push(url); historyPos=history.length-1;}
 }
 
+function getCurrentPool() { return savedMode && saved.length ? saved : filteredCatalog.length ? filteredCatalog : catalog; }
+function showRandom() {
+  const pool = getCurrentPool(); if(!pool.length) return;
+  if(seenImages.size>=pool.length) seenImages.clear();
+  const unseen=pool.filter(item=>!seenImages.has(item.raw||item.url));
+  const item = unseen[Math.floor(Math.random()*unseen.length)];
+  seenImages.add(item.raw||item.url);
+  displayUrl(item.raw||item.url, item.folder);
+  if(savedMode) savedIndex=pool.indexOf(item);
+}
+function showPrevious() {
+  if(savedMode && saved.length){ savedIndex=(savedIndex-1+saved.length)%saved.length; displayUrl(saved[savedIndex].url, saved[savedIndex].folder); }
+  else if(historyPos>0){ historyPos--; const url=history[historyPos]; const found=catalog.find(it=>it.raw===url||it.url===url); displayUrl(url, found?found.folder:"", false); }
+}
+function showNextSaved() { if(!saved.length) return; savedIndex=(savedIndex+1)%saved.length; displayUrl(saved[savedIndex].url, saved[savedIndex].folder); }
+function startCycle(){ if(cycleId) clearInterval(cycleId); cycleId=setInterval(()=>{ savedMode && saved.length ? showNextSaved() : showRandom(); }, 7000); cycleLabel.textContent="Cycle On"; }
+function stopCycle(){ clearInterval(cycleId); cycleId=null; cycleLabel.textContent="Cycle Off"; }
+function toggleCycle(){ cycleId?stopCycle():startCycle(); }
+function toggleSavedMode(){ savedMode=!savedMode; savedModeLabel.textContent="Saved Mode: "+(savedMode?"On":"Off"); }
 
-function showSuggestions(matches, term) {
-  suggestionsEl.innerHTML = "";
-  if (!matches.length) {
-    suggestionsEl.innerHTML = `<div class="no-result">No results for "${term}"</div>`;
-    suggestionsEl.hidden = false;
-    return;
+function saveCurrent(){
+  if(!currentMediaUrl) return;
+  const idx=saved.findIndex(s=>s.url===currentMediaUrl);
+  if(idx!==-1){ saved.splice(idx,1); saveBtn.classList.remove("saved"); }
+  else{ const found=catalog.find(it=>it.raw===currentMediaUrl||it.url===currentMediaUrl); saved.push({url:currentMediaUrl, folder:found?found.folder:""}); saveBtn.classList.add("saved"); }
+  localStorage.setItem("idol_saved", JSON.stringify(saved)); renderSaved();
+}
+function loadSaved(){ try{ saved=JSON.parse(localStorage.getItem("idol_saved"))||[]; }catch{saved=[];} renderSaved(); }
+function renderSaved(){ savedListEl.innerHTML=""; saved.forEach((it,i)=>{ const div=document.createElement("div"); div.className="saved-item"; div.innerHTML=`${/\.(mp4|webm|mov)$/i.test(it.url)?`<video src="${it.url}" autoplay loop muted playsinline></video>`:`<img src="${it.url}">`}<div class='saved-badge'>${i+1}</div>`; div.onclick=()=>{ savedIndex=i; displayUrl(it.url,it.folder); }; savedListEl.appendChild(div); }); }
+
+/* -------------------- Filters -------------------- */
+function applyFilters(){
+  const searchTerm=searchInput.value.trim().toLowerCase();
+  const idolFilter=currentIdolFilter?currentIdolFilter.toLowerCase():"";
+  const hasSearch=!!searchTerm, hasIdol=!!idolFilter, hasCat=!!currentCategoryFilter;
+
+  filteredCatalog=catalog.filter(it=>{
+    const matchSearch=!hasSearch||it.folder.toLowerCase().includes(searchTerm);
+    const matchIdol=!hasIdol||it.folder.toLowerCase().includes(idolFilter);
+    const matchCat=!hasCat||(it.category&&it.category.toLowerCase()===currentCategoryFilter.toLowerCase());
+    return matchSearch&&matchIdol&&matchCat;
+  });
+
+  if(catalogOpen) renderCatalogThumbnails();
+
+  if(hasSearch&&!hasIdol&&!hasCat){
+    const searchCats=categories.filter(cat=> catalog.some(it=>it.category===cat&&it.folder.toLowerCase().includes(searchTerm)) );
+    renderCategoryButtons(searchCats);
   }
-  matches.forEach(folder => {
-    const div = document.createElement("div");
-    div.className = "suggestion";
-    div.textContent = folder;
-    div.onclick = () => selectFolder(folder);
-    suggestionsEl.appendChild(div);
-  });
-  suggestionsEl.hidden = false;
 }
 
-function selectFolder(folder) {
-  const match = folder.trim().toLowerCase();
-
-  // Apply current filters first
-  const pool = catalog.filter(item => {
-    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return true;
-  });
-
-  // Filter by search term
-  filteredCatalog = pool.filter(it => it.folder.toLowerCase() === match);
-  if (!filteredCatalog.length) filteredCatalog = pool.filter(it => it.folder.toLowerCase().includes(match));
-
-  suggestionsEl.hidden = true;
-  searchInput.value = folder;
-  applyFilters(); // this will update buttons and thumbnails
-}
-
-
-function applyFilters() {
-  // Filter catalog based on current idol and category filters
-  filteredCatalog = catalog.filter(item => {
-    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return true;
-  });
-
-  // Determine buttons to show
-  let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
-  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
-
-  if (firstSelection === "idol" && currentIdolFilter) {
-    // Shrink category list to only categories for selected idol
-    categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
-                                             .map(it => it.category)
-                                             .filter(Boolean))].sort();
-  } else if (firstSelection === "category" && currentCategoryFilter) {
-    // Shrink idol list to only idols for selected category
-    idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
-                                         .map(it => it.folder))].sort();
-  }
-
-  renderIdolButtons(idolsForButtons);
-  renderCategoryButtons(categoriesForButtons);
-  renderCatalogThumbnails();
-}
-
-
-
-function renderCatalogThumbnails() {
-  const pool = getCurrentPool();
-  catalogPanel.innerHTML = "";
-  pool.forEach(item => {
-    const img = document.createElement("img");
-    img.src = item.thumb || item.raw || item.url;
-    img.className = "catalog-thumb";
-    img.title = item.folder;
-    img.onclick = () => toggleOverlay(item.raw);
+function renderCatalogThumbnails(){
+  const pool=getCurrentPool(); catalogPanel.innerHTML="";
+  pool.forEach(item=>{
+    const img=document.createElement("img");
+    img.src=item.thumb||item.raw||item.url; img.className="catalog-thumb"; img.title=item.folder;
+    img.onclick=()=>displayUrl(item.raw||item.url, item.folder);
     catalogPanel.appendChild(img);
   });
 }
 
-let overlayVisible = false;
-function toggleOverlay(url) {
-  if (overlayVisible) {
-    overlay.style.display = "none";
-    overlay.innerHTML = "";
-    overlayVisible = false;
+function renderIdolButtons(list=null){
+  idolButtonsEl.innerHTML="";
+  const names=list||[...new Set(filteredCatalog.map(it=>it.folder))];
+  names.forEach(name=>{
+    const btn=document.createElement("button"); btn.className="idol-btn"; btn.textContent=name;
+    btn.onclick=()=>toggleCatalogIdol(name,btn); idolButtonsEl.appendChild(btn);
+  });
+}
+
+function toggleCatalogIdol(folderName, btn){
+  const searchTerm=searchInput.value.trim().toLowerCase();
+  if(currentIdolFilter===folderName){
+    currentIdolFilter=null; btn.classList.remove("active"); applyFilters();
+    const idolsToShow=[...new Set(catalog.filter(it=>(!currentCategoryFilter||it.category.toLowerCase()===currentCategoryFilter.toLowerCase())&&(!searchTerm||it.folder.toLowerCase().includes(searchTerm))).map(it=>it.folder))];
+    renderIdolButtons(idolsToShow);
     return;
   }
-  overlay.innerHTML = "";
-  let media;
-  if (url.match(/\.(mp4|webm|mov)$/i)) {
-    media = document.createElement("video");
-    media.src = url;
-    media.autoplay = true;
-    media.loop = true;
-    media.muted = true;
-    media.controls = true;
-    media.playsInline = true;
-  } else {
-    media = document.createElement("img");
-    media.src = url;
-  }
-  overlay.appendChild(media);
-  overlay.style.display = "flex";
-  overlayVisible = true;
+  currentIdolFilter=folderName; [...idolButtonsEl.children].forEach(b=>b.classList.remove("active")); btn.classList.add("active");
+  applyFilters();
 }
 
-overlay.addEventListener("click", () => {
-  overlay.style.display = "none";
-  overlay.innerHTML = "";
-  overlayVisible = false;
-});
-
-function renderIdolButtons(list = null) {
-  idolButtonsEl.innerHTML = "";
-  const names = list || [...new Set(catalog.map(it => it.folder))];
-  names.forEach(name => {
-    const btn = document.createElement("button");
-    btn.className = "idol-btn";
-    btn.textContent = name;
-    if (currentIdolFilter === name) btn.classList.add("active");
-    btn.onclick = () => {
-      if (!firstSelection) firstSelection = "idol"; // mark first click
-      currentIdolFilter = currentIdolFilter === name ? null : name;
-    
-      // reset firstSelection if both filters are cleared
-      if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
-    
-      applyFilters();
-    };
-
-    idolButtonsEl.appendChild(btn);
+/* -------------------- Category Buttons -------------------- */
+function renderCategoryButtons(list=categories){
+  categoryPanel.innerHTML="";
+  list.forEach(cat=>{
+    const btn=document.createElement("button"); btn.className="category-btn"; btn.textContent=cat;
+    if(currentCategoryFilter===cat) btn.classList.add("active");
+    btn.onclick=()=>toggleCategoryFilter(cat,btn); categoryPanel.appendChild(btn);
   });
 }
 
-function renderCategoryButtons(list = null) {
-  categoryPanel.innerHTML = "";
-  const cats = list || [...new Set(catalog.map(it => it.category).filter(Boolean))];
-  cats.forEach(cat => {
-    const btn = document.createElement("button");
-    btn.className = "category-btn";
-    btn.textContent = cat;
-    if (currentCategoryFilter === cat) btn.classList.add("active");
-    btn.onclick = () => {
-      if (!firstSelection) firstSelection = "category"; // mark first click
-      currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
-    
-      // reset firstSelection if both filters are cleared
-      if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
-    
-      applyFilters();
-    };
-
-    categoryPanel.appendChild(btn);
-  });
+function toggleCategoryFilter(cat,btn){
+  const searchTerm=searchInput.value.trim().toLowerCase();
+  if(currentCategoryFilter===cat){ currentCategoryFilter=null; btn.classList.remove("active"); applyFilters(); renderIdolButtons(); return; }
+  currentCategoryFilter=cat; [...categoryPanel.children].forEach(b=>b.classList.remove("active")); btn.classList.add("active"); applyFilters(); renderIdolButtons();
 }
 
-// Show suggestions while typing
-searchInput.addEventListener("input", () => handleSearch(searchInput.value));
-
-// Apply search when pressing Enter
-searchInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    applySearch(searchInput.value);
-    suggestionsEl.hidden = true;
-  }
-});
-
-// Apply search when clicking Search button
-searchBtn.addEventListener("click", () => {
-  applySearch(searchInput.value);
-  suggestionsEl.hidden = true;
-});
-
-
-document.addEventListener("click", (e) => {
-  if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
-    suggestionsEl.hidden = true;
-  }
-});
-
-function applySearch(term) {
-  term = term.trim().toLowerCase();
-  if (!term) {
-    applyFilters(); // reset to current idol/category filters
-    return;
-  }
-
-  // Filter catalog based on current filters AND search term
-  filteredCatalog = catalog.filter(item => {
-    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return item.folder.toLowerCase().includes(term);
-  });
-
-  // Update available idols and categories based on filtered catalog
-  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
-  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
-
-  renderIdolButtons(availableIdols);
-  renderCategoryButtons(availableCategories);
-  renderCatalogThumbnails();
+/* -------------------- Search -------------------- */
+function handleSearch(input){
+  const term=input.trim().toLowerCase();
+  if(!term){ filteredCatalog=catalog.slice(); suggestionsEl.hidden=true; applyFilters(); return; }
+  const matches=catalog.filter(it=>it.folder.toLowerCase().includes(term)).map(it=>it.folder);
+  const unique=[...new Set(matches)].slice(0,10);
+  suggestionsEl.innerHTML=unique.length?unique.map(n=>`<div class="suggestion">${n}</div>`).join(""):`<div class="no-result">No matches</div>`;
+  suggestionsEl.hidden=false;
+  [...suggestionsEl.children].forEach(div=>div.onclick=()=>{ searchInput.value=div.textContent; suggestionsEl.hidden=true; applyFilters(); });
 }
 
+searchInput.addEventListener("input",()=>handleSearch(searchInput.value));
+searchBtn.addEventListener("click",()=>applyFilters());
 
-async function loadCatalog() {
-  const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
-  const txt1 = await res1.text();
-  const txt2 = await res2.text();
+/* -------------------- Toggles -------------------- */
+catalogToggle.onclick=()=>{ catalogOpen=!catalogOpen; catalogPanel.classList.toggle("open",catalogOpen); if(catalogOpen) renderCatalogThumbnails(); };
+categoryToggle.onclick=()=>{ categoryOpen=!categoryOpen; categoryPanel.classList.toggle("open",categoryOpen); };
 
-  catalog = parseCatalogText(txt1 + "\n" + txt2);
-  filteredCatalog = catalog.slice();
-  categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
+/* -------------------- Buttons -------------------- */
+randomBtn.onclick=showRandom;
+prevBtn.onclick=showPrevious;
+cycleToggle.onclick=toggleCycle;
+savedModeToggle.onclick=toggleSavedMode;
+saveBtn.onclick=saveCurrent;
 
-  renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
-  renderCategoryButtons(categories);
-  renderCatalogThumbnails();
+/* -------------------- Init -------------------- */
+async function init(){
+  const txt=await (await fetch(MEDIA_URL)).text();
+  catalog=parseCatalogText(txt);
+  filteredCatalog=catalog.slice();
+
+  const catTxt=await (await fetch(CAT_URL)).text();
+  categories=catTxt.split("\n").map(c=>c.trim()).filter(Boolean);
+  
+  renderIdolButtons(); renderCategoryButtons(); loadSaved(); showRandom();
 }
-
-loadCatalog();
+init();
 </script>
 </body>
 </html>
