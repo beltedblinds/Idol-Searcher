@@ -39,7 +39,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 340px;
+    width: 340px; /* combined width of idol + category panels */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -107,9 +107,10 @@
     color: var(--muted);
   }
 
+  /* Idol Buttons Panel (left) */
   #idolButtons {
     position: fixed;
-    top: 60px;
+    top: 60px; /* below search bar (search bar height ~50px) */
     left: 0;
     width: 200px;
     height: calc(100% - 50px);
@@ -125,9 +126,10 @@
     box-sizing: border-box;
   }
 
+  /* Category Panel (next to idols) */
   #categoryPanel {
     position: fixed;
-    top: 60px;
+    top: 60px; /* below search bar */
     left: 200px;
     width: 160px;
     height: calc(100% - 50px);
@@ -142,11 +144,13 @@
     box-sizing: border-box;
   }
 
+  /* Hide scrollbars */
   #idolButtons::-webkit-scrollbar,
   #categoryPanel::-webkit-scrollbar { display: none; }
   #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
   #categoryPanel { -ms-overflow-style: none; scrollbar-width: none; }
 
+  /* Catalog panel */
   #catalogPanel {
     position: fixed;
     top: 0;
@@ -175,6 +179,7 @@
     border-color: var(--accent);
   }
 
+  /* Buttons */
   .idol-btn, .category-btn {
     background: var(--card);
     border: 1px solid #333;
@@ -200,6 +205,7 @@
     color: var(--accent);
   }
 
+  /* Overlay */
   #overlay {
     position: fixed;
     top: 0;
@@ -223,18 +229,25 @@
 </head>
 <body>
 
+<!-- Search bar above panels -->
 <div class="search-container">
   <input id="searchInput" placeholder="Search folder..." />
   <button id="searchBtn">🔍 Search</button>
   <div id="suggestions" hidden></div>
 </div>
 
+<!-- Fixed panels -->
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
+
+<!-- Catalog -->
 <div id="catalogPanel"></div>
+
+<!-- Overlay -->
 <div id="overlay"></div>
 
 <script>
+// --- JS remains the same ---
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
@@ -243,7 +256,7 @@ let filteredCatalog = [];
 let currentIdolFilter = null;
 let currentCategoryFilter = null;
 let categories = [];
-let firstSelection = null;
+let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
 
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
@@ -271,19 +284,25 @@ function handleSearch(input) {
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
     return true;
   });
+
   if (!term) {
     filteredCatalog = pool;
-    renderIdolButtons([...new Set(pool.map(it => it.folder))].sort());
-    renderCategoryButtons([...new Set(pool.map(it => it.category).filter(Boolean))].sort());
+    const availableIdols = [...new Set(pool.map(it => it.folder))].sort();
+    const availableCategories = [...new Set(pool.map(it => it.category).filter(Boolean))].sort();
+    renderIdolButtons(availableIdols);
+    renderCategoryButtons(availableCategories);
     renderCatalogThumbnails();
     suggestionsEl.hidden = true;
     return;
   }
+
+  // Suggest folders that match the search term within the current pool
   const matches = [...new Set(pool.map(it => it.folder))].filter(f =>
     f.toLowerCase().includes(term)
   );
   showSuggestions(matches, term);
 }
+
 
 function showSuggestions(matches, term) {
   suggestionsEl.innerHTML = "";
@@ -303,34 +322,54 @@ function showSuggestions(matches, term) {
 }
 
 function selectFolder(folder) {
-  searchInput.value = folder;
-  suggestionsEl.hidden = true;
-  applyFilters();
-}
+  const match = folder.trim().toLowerCase();
 
-function applyFilters() {
-  const searchTerm = searchInput.value.trim().toLowerCase();
-  const idolFilter = currentIdolFilter ? currentIdolFilter.toLowerCase() : "";
-  const hasSearch = !!searchTerm;
-  const hasIdol = !!idolFilter;
-  const hasCat = !!currentCategoryFilter;
-
-  filteredCatalog = catalog.filter(it => {
-    const matchSearch = !hasSearch || it.folder.toLowerCase().includes(searchTerm);
-    const matchIdol = !hasIdol || it.folder.toLowerCase().includes(idolFilter);
-    const matchCat = !hasCat || (it.category && it.category.toLowerCase() === currentCategoryFilter?.toLowerCase());
-    return matchSearch && matchIdol && matchCat;
+  // Apply current filters first
+  const pool = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return true;
   });
 
-  renderCatalogThumbnails();
+  // Filter by search term
+  filteredCatalog = pool.filter(it => it.folder.toLowerCase() === match);
+  if (!filteredCatalog.length) filteredCatalog = pool.filter(it => it.folder.toLowerCase().includes(match));
 
-  if (hasSearch && !hasIdol && !hasCat) {
-    const searchCats = categories.filter(cat =>
-      catalog.some(it => it.category === cat && it.folder.toLowerCase().includes(searchTerm))
-    );
-    renderCategoryButtons(searchCats);
-  }
+  suggestionsEl.hidden = true;
+  searchInput.value = folder;
+  applyFilters(); // this will update buttons and thumbnails
 }
+
+
+function applyFilters() {
+  // Filter catalog based on current idol and category filters
+  filteredCatalog = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return true;
+  });
+
+  // Determine buttons to show
+  let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
+  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
+
+  if (firstSelection === "idol" && currentIdolFilter) {
+    // Shrink category list to only categories for selected idol
+    categoriesForButtons = [...new Set(catalog.filter(it => it.folder === currentIdolFilter)
+                                             .map(it => it.category)
+                                             .filter(Boolean))].sort();
+  } else if (firstSelection === "category" && currentCategoryFilter) {
+    // Shrink idol list to only idols for selected category
+    idolsForButtons = [...new Set(catalog.filter(it => it.category === currentCategoryFilter)
+                                         .map(it => it.folder))].sort();
+  }
+
+  renderIdolButtons(idolsForButtons);
+  renderCategoryButtons(categoriesForButtons);
+  renderCatalogThumbnails();
+}
+
+
 
 function renderCatalogThumbnails() {
   const pool = getCurrentPool();
@@ -353,6 +392,7 @@ function toggleOverlay(url) {
     overlayVisible = false;
     return;
   }
+  overlay.innerHTML = "";
   let media;
   if (url.match(/\.(mp4|webm|mov)$/i)) {
     media = document.createElement("video");
@@ -366,7 +406,6 @@ function toggleOverlay(url) {
     media = document.createElement("img");
     media.src = url;
   }
-  overlay.innerHTML = "";
   overlay.appendChild(media);
   overlay.style.display = "flex";
   overlayVisible = true;
@@ -387,11 +426,15 @@ function renderIdolButtons(list = null) {
     btn.textContent = name;
     if (currentIdolFilter === name) btn.classList.add("active");
     btn.onclick = () => {
-      if (!firstSelection) firstSelection = "idol";
+      if (!firstSelection) firstSelection = "idol"; // mark first click
       currentIdolFilter = currentIdolFilter === name ? null : name;
+    
+      // reset firstSelection if both filters are cleared
       if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
+    
       applyFilters();
     };
+
     idolButtonsEl.appendChild(btn);
   });
 }
@@ -405,38 +448,66 @@ function renderCategoryButtons(list = null) {
     btn.textContent = cat;
     if (currentCategoryFilter === cat) btn.classList.add("active");
     btn.onclick = () => {
-      if (!firstSelection) firstSelection = "category";
+      if (!firstSelection) firstSelection = "category"; // mark first click
       currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
+    
+      // reset firstSelection if both filters are cleared
       if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
+    
       applyFilters();
     };
+
     categoryPanel.appendChild(btn);
   });
 }
 
-// Updated event listeners
-searchInput.addEventListener("input", () => {
-  handleSearch(searchInput.value);
-  applyFilters();
-});
+// Show suggestions while typing
+searchInput.addEventListener("input", () => handleSearch(searchInput.value));
 
+// Apply search when pressing Enter
 searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
+    applySearch(searchInput.value);
     suggestionsEl.hidden = true;
-    applyFilters();
   }
 });
 
+// Apply search when clicking Search button
 searchBtn.addEventListener("click", () => {
+  applySearch(searchInput.value);
   suggestionsEl.hidden = true;
-  applyFilters();
 });
+
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
     suggestionsEl.hidden = true;
   }
 });
+
+function applySearch(term) {
+  term = term.trim().toLowerCase();
+  if (!term) {
+    applyFilters(); // reset to current idol/category filters
+    return;
+  }
+
+  // Filter catalog based on current filters AND search term
+  filteredCatalog = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return item.folder.toLowerCase().includes(term);
+  });
+
+  // Update available idols and categories based on filtered catalog
+  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
+  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+
+  renderIdolButtons(availableIdols);
+  renderCategoryButtons(availableCategories);
+  renderCatalogThumbnails();
+}
+
 
 async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
