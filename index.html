@@ -251,6 +251,10 @@
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 
+const CATEGORY_ORDER_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
+let categoryOrder = [];
+
+
 let catalog = [];
 let filteredCatalog = [];
 let currentIdolFilter = null;
@@ -468,7 +472,12 @@ function renderIdolButtons(list = null) {
 
 function renderCategoryButtons(list = null) {
   categoryPanel.innerHTML = "";
-  const cats = list || [...new Set(catalog.map(it => it.category).filter(Boolean))];
+  
+  const catsSet = new Set(list || catalog.map(it => it.category).filter(Boolean));
+  
+  // Keep original order from categories.txt
+  const cats = categoryOrder.filter(cat => catsSet.has(cat));
+  
   cats.forEach(cat => {
     const btn = document.createElement("button");
     btn.className = "category-btn";
@@ -478,15 +487,14 @@ function renderCategoryButtons(list = null) {
       if (!firstSelection) firstSelection = "category"; // mark first click
       currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
     
-      // reset firstSelection if both filters are cleared
       if (!currentIdolFilter && !currentCategoryFilter) firstSelection = null;
     
       applyFilters();
     };
-
     categoryPanel.appendChild(btn);
   });
 }
+
 
 // Show suggestions while typing
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
@@ -537,8 +545,15 @@ function applySearch(term) {
   renderCatalogThumbnails();
 }
 
+async function loadCategoryOrder() {
+  const res = await fetch(CATEGORY_ORDER_URL);
+  const text = await res.text();
+  categoryOrder = text.split("\n").map(c => c.trim()).filter(Boolean);
+}
+
 
 async function loadCatalog() {
+  await loadCategoryOrder(); // <-- load categories.txt first
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
   const txt1 = await res1.text();
   const txt2 = await res2.text();
