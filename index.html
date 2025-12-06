@@ -35,110 +35,81 @@
     letter-spacing: 1px;
   }
 
-  .search-container {
-    position: relative;
+  /* Left-side fixed container */
+  #leftPanels {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 360px;          /* 200px idols + 160px categories */
+    height: 100%;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 20px;
-    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    background: #111;
+    z-index: 999;
+    box-sizing: border-box;
+    padding-top: 10px;
   }
 
-  #searchInput {
-    flex: 0 0 340px;
-    padding: 10px 14px;
+  /* Search bar at top of leftPanels */
+  #leftPanels .search-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #leftPanels #searchInput {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 14px;
     border-radius: 8px;
     border: 1px solid #333;
     background: var(--card);
     color: var(--text);
-    font-size: 14px;
     outline: none;
   }
 
-  #searchInput:focus { border-color: var(--accent); }
+  #leftPanels #searchInput:focus { border-color: var(--accent); }
 
-  #searchBtn {
-    background: var(--card);
-    border: 1px solid #333;
-    color: var(--text);
-    padding: 10px 14px;
+  #leftPanels #searchBtn {
+    padding: 8px 10px;
     border-radius: 8px;
+    border: 1px solid #333;
+    background: var(--card);
+    color: var(--text);
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 14px;
   }
 
-  #searchBtn:hover {
+  #leftPanels #searchBtn:hover {
     background: #272727;
     border-color: var(--accent);
     color: var(--accent-hover);
   }
 
-  #suggestions {
-    position: absolute;
-    top: 44px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1a1a1a;
-    border: 1px solid #333;
-    border-radius: 8px;
-    max-height: 180px;
-    overflow-y: auto;
-    z-index: 10;
-  }
-
-  .suggestion {
-    padding: 8px 12px;
-    cursor: pointer;
-  }
-
-  .suggestion:hover {
-    background: #272727;
-    color: var(--accent);
-  }
-
-  .no-result {
-    padding: 8px 12px;
-    color: var(--muted);
-  }
-
-  /* 🩷 Idol Buttons Panel (left) */
+  /* Idol buttons panel */
   #idolButtons {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 200px;           /* always open */
-    height: 100%;
-    padding: 10px;
+    flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    background: #111;
-    border-right: 1px solid #333;
-    z-index: 999;
-    box-sizing: border-box;
-  }
-  
-  /* 🧭 Category Panel (next to idols) */
-  #categoryPanel {
-    position: fixed;
-    top: 0;
-    left: 200px;            /* immediately right of idol buttons */
-    width: 160px;           /* always open */
-    height: 100%;
-    padding: 10px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    background: #111;
-    border-right: 1px solid #333;
-    z-index: 998;
-    box-sizing: border-box;
+    padding: 0 10px 10px 10px;
   }
 
+  /* Category panel */
+  #categoryPanel {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 10px 10px 10px;
+  }
 
   /* Hide scrollbars */
   #idolButtons::-webkit-scrollbar,
@@ -150,7 +121,7 @@
   #catalogPanel {
     position: fixed;
     top: 0;
-    left: 360px;            /* 200 + 160 = 360px offset */
+    left: 360px;            /* offset for leftPanels */
     right: 0;
     bottom: 0;
     padding: 10px;
@@ -160,7 +131,6 @@
     overflow-y: auto;
     box-sizing: border-box;
   }
-
 
   .catalog-thumb {
     width: 100%;
@@ -225,16 +195,19 @@
 </style>
 </head>
 <body>
+<h1>💖 K-pop Idol Gallery</h1>
 
-<div class="search-container">
-  <input id="searchInput" placeholder="Search folder..." />
-  <button id="searchBtn">🔍 Search</button>
-  <div id="suggestions" hidden></div>
+<!-- Left-side panels container -->
+<div id="leftPanels">
+  <div class="search-container">
+    <input id="searchInput" placeholder="Search folder..." />
+    <button id="searchBtn">🔍 Search</button>
+    <div id="suggestions" hidden></div>
+  </div>
+
+  <div id="idolButtons"></div>
+  <div id="categoryPanel"></div>
 </div>
-
-<!-- Fixed panels -->
-<div id="idolButtons"></div>
-<div id="categoryPanel"></div>
 
 <!-- Catalog -->
 <div id="catalogPanel"></div>
