@@ -348,17 +348,26 @@ function applyFilters() {
     return true;
   });
 
-  // Calculate available idols and categories based on filteredCatalog
-  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
-  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
-
-  // Re-render buttons with only the available options
-  renderIdolButtons(availableIdols);
-  renderCategoryButtons(availableCategories);
-
-  // Render thumbnails
+  // Render thumbnails only
   renderCatalogThumbnails();
+
+  // Update button highlights
+  updateButtonHighlights();
 }
+
+function updateButtonHighlights() {
+  // Idol buttons
+  [...idolButtonsEl.children].forEach(btn => {
+    btn.classList.toggle("active", btn.textContent === currentIdolFilter);
+  });
+
+  // Category buttons
+  [...categoryPanel.children].forEach(btn => {
+    btn.classList.toggle("active", btn.textContent === currentCategoryFilter);
+  });
+}
+
+
 
 
 function renderCatalogThumbnails() {
@@ -414,7 +423,6 @@ function renderIdolButtons(list = null) {
     const btn = document.createElement("button");
     btn.className = "idol-btn";
     btn.textContent = name;
-    if (currentIdolFilter === name) btn.classList.add("active");
     btn.onclick = () => {
       currentIdolFilter = currentIdolFilter === name ? null : name;
       applyFilters();
@@ -445,7 +453,6 @@ function renderCategoryButtons(list = null) {
     const btn = document.createElement("button");
     btn.className = "category-btn";
     btn.textContent = cat;
-    if (currentCategoryFilter === cat) btn.classList.add("active");
     btn.onclick = () => {
       currentCategoryFilter = currentCategoryFilter === cat ? null : cat;
       applyFilters();
@@ -453,7 +460,6 @@ function renderCategoryButtons(list = null) {
     categoryPanel.appendChild(btn);
   });
 }
-
 
 function toggleCategoryFilter(cat, btn) {
   if (currentCategoryFilter === cat) {
