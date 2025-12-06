@@ -132,231 +132,112 @@
     color: var(--accent-hover);
   }
 
-  .image-wrapper {
-    position: relative;
-    max-width: 92vw;
-    max-height: 78vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 16px;
-    box-shadow: 0 0 20px rgba(255, 123, 203, 0.2);
-    background: #111;
-  }
-
-  #idolImage {
-    max-width: 100%;
-    max-height: 78vh;
-    border-radius: 16px;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  #label {
-    margin-top: 12px;
-    font-size: 15px;
-    color: var(--muted);
-  }
-
-  #savedList {
-    margin-top: 22px;
-    display: flex;
-    flex-wrap: wrap;
+  /* 🧭 Catalog now full-page grid */
+  #catalogPanel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 12px;
-    justify-content: center;
+    width: 100%;
+    max-width: 1280px;
+    padding: 10px;
+    margin-top: 10px;
+    overflow-y: auto;
   }
 
-  .saved-item {
-    position: relative;
-    width: 96px;
-    height: 96px;
+  .catalog-thumb {
+    width: 100%;
     border-radius: 10px;
-    overflow: hidden;
     cursor: pointer;
-    border: 1px solid #333;
-    background: #111;
     transition: transform 0.2s, border-color 0.2s;
+    border: 1px solid #333;
+    object-fit: cover;
   }
 
-  .saved-item:hover {
-    transform: scale(1.07);
+  .catalog-thumb:hover {
+    transform: scale(1.05);
     border-color: var(--accent);
   }
 
-  .saved-item img {
-    width: 100%;
+  /* 🌸 Idol buttons (left side) */
+  #idolButtons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
     height: 100%;
-    object-fit: cover;
+    overflow: hidden;
+    background: #111;
+    border-right: none;
+    transition: width 0.3s ease;
+    padding: 0;
+    box-sizing: border-box;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    visibility: hidden;
+    pointer-events: none;
   }
 
-  .saved-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 10px;
+  #idolButtons::-webkit-scrollbar { display: none; }
+  #idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
+
+  #idolButtons.open {
+    width: 200px;
+    padding: 10px;
+    border-right: 1px solid #333;
+    overflow-y: auto;
+    visibility: visible;
+    pointer-events: auto;
   }
 
-  .saved-badge {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 2px 6px;
-    font-size: 12px;
-    border-radius: 999px;
+  .idol-btn {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
   }
 
-  /* 🧭 Catalog panel (right) */
-#catalogPanel {
-  position: fixed;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 0;
-  background: #111;
-  border-left: none;
-  padding: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-  z-index: 999;
-  transition: all 0.3s ease;
-  visibility: hidden;
-  pointer-events: none;
-}
+  .idol-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
 
-#catalogPanel.open {
-  width: 280px;
-  padding: 10px;
-  border-left: 1px solid #333;
-  overflow-y: auto;
-  visibility: visible;
-  pointer-events: auto;
-}
+  .idol-btn.active {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 
-/* 🗂️ Category Panel (auto-aligns beside idol buttons if open) */
-#categoryPanel {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 0;
-  background: #111;
-  border-right: none;
-  padding: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-  z-index: 998;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: left 0.3s ease, width 0.3s ease;
-  visibility: hidden;
-  pointer-events: none;
-}
+  .category-btn {
+    background: var(--card);
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
 
-#categoryPanel.open {
-  width: 160px;
-  padding: 10px;
-  border-right: 1px solid #333;
-  overflow-y: auto;
-  visibility: visible;
-  pointer-events: auto;
-}
+  .category-btn:hover {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent-hover);
+  }
 
-.catalog-thumb {
-  width: 100%;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: transform 0.2s, border 0.2s;
-  border: 1px solid #333;
-}
-
-.catalog-thumb:hover {
-  transform: scale(1.03);
-  border-color: var(--accent);
-}
-
-/* 🌸 Idol buttons (left side) */
-#idolButtons {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 100%;
-  overflow: hidden;
-  background: #111;
-  border-right: none;
-  transition: width 0.3s ease;
-  padding: 0;
-  box-sizing: border-box;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-#idolButtons::-webkit-scrollbar { display: none; }
-#idolButtons { -ms-overflow-style: none; scrollbar-width: none; }
-
-#idolButtons.open {
-  width: 200px;
-  padding: 10px;
-  border-right: 1px solid #333;
-  overflow-y: auto;
-  visibility: visible;
-  pointer-events: auto;
-}
-
-.idol-btn {
-  background: var(--card);
-  border: 1px solid #333;
-  color: var(--text);
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.idol-btn:hover {
-  background: #272727;
-  border-color: var(--accent);
-  color: var(--accent-hover);
-}
-
-.idol-btn.active {
-  background: #272727;
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.category-btn {
-  background: var(--card);
-  border: 1px solid #333;
-  color: var(--text);
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
-}
-
-.category-btn:hover {
-  background: #272727;
-  border-color: var(--accent);
-  color: var(--accent-hover);
-}
-
-.category-btn.active {
-  background: #272727;
-  border-color: var(--accent);
-  color: var(--accent);
-}
+  .category-btn.active {
+    background: #272727;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 
 </style>
 </head>
@@ -380,14 +261,7 @@
 <!-- 🌸 Category panel (slides out beside idol buttons) -->
 <div id="categoryPanel"></div>
 
-<div class="image-wrapper">
-  <img id="idolImage" src="" alt="Idol" />
-</div>
-
-<div id="label"></div>
-<div id="savedList"></div>
-
-<!-- Catalog stays on right -->
+<!-- Catalog thumbnails now full-page grid -->
 <div id="catalogPanel"></div>
 
 <script>
@@ -397,13 +271,11 @@ const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Catego
 
 let catalog = [];
 let filteredCatalog = [];
-let history = [];
-let historyPos = -1;
-let currentMediaUrl = "";
+let currentIdolFilter = null;
+let currentCategoryFilter = null;
+let categories = [];
 
 /* DOM */
-const imgEl = document.getElementById("idolImage");
-const labelEl = document.getElementById("label");
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const suggestionsEl = document.getElementById("suggestions");
@@ -423,61 +295,20 @@ function parseCatalogText(text) {
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function displayUrl(url, folder, pushHist = true) {
-  if (!url) return;
-
-  const wrapper = document.querySelector(".image-wrapper");
-  wrapper.innerHTML = ''; // clear old media
-
-  let media;
-  if (url.match(/\.(mp4|webm|mov)$/i)) {
-    media = document.createElement("video");
-    media.src = url;
-    media.autoplay = true;
-    media.loop = true;
-    media.muted = true;
-    media.playsInline = true;
-    media.style.maxWidth = "100%";
-    media.style.maxHeight = "78vh";
-    media.style.borderRadius = "16px";
-  } else {
-    media = document.createElement("img");
-    media.src = url;
-    media.style.maxWidth = "100%";
-    media.style.maxHeight = "78vh";
-    media.style.borderRadius = "16px";
-    media.style.transition = "opacity 0.3s ease-in-out";
-  }
-
-  wrapper.appendChild(media);
-  labelEl.textContent = folder || "";
-  currentMediaUrl = url;
-
-  if (pushHist && (!history.length || history[history.length - 1] !== url)) {
-    history.push(url);
-    historyPos = history.length - 1;
-  }
-}
-
 function getCurrentPool() {
   return filteredCatalog.length ? filteredCatalog : catalog;
 }
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
-
   if (!term) {
     filteredCatalog = catalog.slice();
-    const allIdols = [...new Set(catalog.map(it => it.folder))];
-    renderIdolButtons(allIdols);
-
-    const allCategories = [...new Set(catalog.map(it => it.category))];
-    renderCategoryButtons(allCategories);
-
+    renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
+    renderCategoryButtons([...new Set(catalog.map(it=>it.category).filter(Boolean))]);
+    renderCatalogThumbnails();
     suggestionsEl.hidden = true;
     return;
   }
-
   const matches = [...new Set(catalog.map(it => it.folder))].filter(f =>
     f.toLowerCase().includes(term)
   );
@@ -501,12 +332,6 @@ function showSuggestions(matches, term) {
   suggestionsEl.hidden = false;
 }
 
-let currentIdolFilter = null;
-let currentCategoryFilter = null;
-let catalogOpen = false;
-let categoryOpen = false;
-let categories = [];
-
 function selectFolder(folder) {
   const match = folder.trim().toLowerCase();
   filteredCatalog = catalog.filter(it => it.folder.toLowerCase() === match);
@@ -514,32 +339,17 @@ function selectFolder(folder) {
   suggestionsEl.hidden = true;
   searchInput.value = folder;
 
-  showRandomFromFiltered();
   applyFilters();
-  if (catalogOpen) renderCatalogThumbnails();
-  renderIdolButtons();
+  renderCatalogThumbnails();
 }
 
-function showRandomFromFiltered() {
-  const pool = getCurrentPool();
-  if (!pool.length) return;
-  const item = pool[Math.floor(Math.random() * pool.length)];
-  displayUrl(item.raw || item.url, item.folder, true);
-}
-
-function toggleCatalog() {
-  catalogOpen = !catalogOpen;
-  catalogPanel.classList.toggle("open", catalogOpen);
-  idolButtonsEl.classList.toggle("open", catalogOpen);
-
-  if (categoryPanel.classList.contains("open")) {
-    categoryPanel.style.left = idolButtonsEl.classList.contains("open") ? "200px" : "0";
-  }
-
-  if (catalogOpen) {
-    renderCatalogThumbnails();
-    renderIdolButtons();
-  }
+function applyFilters() {
+  filteredCatalog = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return true;
+  });
+  renderCatalogThumbnails();
 }
 
 function renderCatalogThumbnails() {
@@ -550,7 +360,6 @@ function renderCatalogThumbnails() {
     img.src = item.thumb || item.raw || item.url;
     img.className = "catalog-thumb";
     img.title = item.folder;
-    img.onclick = () => displayUrl(item.raw || item.url, item.folder, true);
     catalogPanel.appendChild(img);
   });
 }
@@ -558,7 +367,6 @@ function renderCatalogThumbnails() {
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
   const names = list || [...new Set(filteredCatalog.map(it => it.folder))];
-  if (!names.length) return;
   names.forEach(name => {
     const btn = document.createElement("button");
     btn.className = "idol-btn";
@@ -569,15 +377,11 @@ function renderIdolButtons(list = null) {
 }
 
 function toggleCatalogIdol(folderName, btn) {
-  const searchTerm = searchInput.value.trim().toLowerCase();
-
   if (currentIdolFilter === folderName) {
     currentIdolFilter = null;
     btn.classList.remove("active");
     applyFilters();
-    const allIdols = [...new Set(catalog.map(it => it.folder))];
-    renderIdolButtons(allIdols);
-    renderCategoryButtons(categories);
+    renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
     return;
   }
 
@@ -614,23 +418,14 @@ function toggleCategoryFilter(cat, btn) {
   applyFilters();
 }
 
-function applyFilters() {
-  filteredCatalog = catalog.filter(item => {
-    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    return true;
-  });
-  if (catalogOpen) renderCatalogThumbnails();
-}
-
 /* Event listeners */
 searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
-catalogToggle.addEventListener("click", toggleCatalog);
+catalogToggle.addEventListener("click", () => {
+  idolButtonsEl.classList.toggle("open");
+});
 categoryToggle.addEventListener("click", () => {
-  categoryOpen = !categoryOpen;
-  categoryPanel.classList.toggle("open", categoryOpen);
-  categoryPanel.style.left = idolButtonsEl.classList.contains("open") ? "200px" : "0";
+  categoryPanel.classList.toggle("open");
 });
 
 document.addEventListener("click", (e) => {
@@ -647,16 +442,14 @@ async function loadCatalog() {
 
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
-
   categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
 
-  renderIdolButtons();
+  renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
-  showRandomFromFiltered();
+  renderCatalogThumbnails();
 }
 
 loadCatalog();
-
 </script>
 </body>
 </html>
