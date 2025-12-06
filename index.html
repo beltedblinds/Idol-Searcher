@@ -106,6 +106,12 @@ h1 {
   padding: 10px;
   box-sizing: border-box;
   z-index: 999;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+#idolButtons::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
 }
 
 /* ✅ ALWAYS-OPEN CATEGORY PANEL NEXT TO IT */
