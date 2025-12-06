@@ -342,10 +342,13 @@ function selectFolder(folder) {
 
 
 function applyFilters() {
-  // Filter catalog based on current idol and category filters
+  const term = searchInput.value.trim().toLowerCase();
+
+  // Filter catalog based on current idol, category, AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (term && !item.folder.toLowerCase().includes(term)) return false; // <-- respect search term
     return true;
   });
 
