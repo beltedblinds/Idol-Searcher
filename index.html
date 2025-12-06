@@ -469,14 +469,53 @@ function toggleCategoryFilter(cat, btn) {
   applyFilters();
 }
 
-searchBtn.addEventListener("click", () => handleSearch(searchInput.value));
+// Show suggestions while typing
 searchInput.addEventListener("input", () => handleSearch(searchInput.value));
+
+// Apply search when pressing Enter
+searchInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    applySearch(searchInput.value);
+    suggestionsEl.hidden = true;
+  }
+});
+
+// Apply search when clicking Search button
+searchBtn.addEventListener("click", () => {
+  applySearch(searchInput.value);
+  suggestionsEl.hidden = true;
+});
+
 
 document.addEventListener("click", (e) => {
   if (!suggestionsEl.contains(e.target) && e.target !== searchInput) {
     suggestionsEl.hidden = true;
   }
 });
+
+function applySearch(term) {
+  term = term.trim().toLowerCase();
+  if (!term) {
+    applyFilters(); // reset to current idol/category filters
+    return;
+  }
+
+  // Filter catalog based on current filters AND search term
+  filteredCatalog = catalog.filter(item => {
+    if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
+    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    return item.folder.toLowerCase().includes(term);
+  });
+
+  // Update available idols and categories based on filtered catalog
+  const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
+  const availableCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+
+  renderIdolButtons(availableIdols);
+  renderCategoryButtons(availableCategories);
+  renderCatalogThumbnails();
+}
+
 
 async function loadCatalog() {
   const [res1, res2] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02)]);
