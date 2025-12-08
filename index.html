@@ -282,7 +282,10 @@ function parseCatalogText(text) {
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
-function getCurrentPool() { return filteredCatalog.length ? filteredCatalog : catalog; }
+function getCurrentPool() { 
+  return filteredCatalog; // no fallback to full catalog
+}
+
 
 function handleSearch(input) {
   const term = input.trim().toLowerCase();
@@ -405,6 +408,17 @@ function applyFilters() {
 function renderCatalogThumbnails() {
   const pool = getCurrentPool();
   catalogPanel.innerHTML = "";
+
+  if (!pool.length) {
+    const msg = document.createElement("div");
+    msg.textContent = "No results to display.";
+    msg.style.color = "var(--muted)";
+    msg.style.fontSize = "14px";
+    msg.style.padding = "10px";
+    catalogPanel.appendChild(msg);
+    return;
+  }
+
   pool.forEach(item => {
     const img = document.createElement("img");
     img.src = item.thumb || item.raw || item.url;
@@ -414,6 +428,7 @@ function renderCatalogThumbnails() {
     catalogPanel.appendChild(img);
   });
 }
+
 
 let overlayVisible = false;
 function toggleOverlay(url) {
