@@ -293,14 +293,15 @@ function handleSearch(input) {
   });
 
   if (!term) {
-    filteredCatalog = [];
-    renderIdolButtons([]);
-    renderCategoryButtons([]);
+    filteredCatalog = pool;
+    const availableIdols = [...new Set(pool.map(it => it.folder))].sort();
+    const availableCategories = [...new Set(pool.map(it => it.category).filter(Boolean))].sort();
+    renderIdolButtons(availableIdols);
+    renderCategoryButtons(availableCategories);
     renderCatalogThumbnails();
     suggestionsEl.hidden = true;
     return;
   }
-
 
   // Suggest folders that match the search term within the current pool
   const matches = [...new Set(pool.map(it => it.folder))].filter(f =>
@@ -521,16 +522,20 @@ document.addEventListener("click", (e) => {
 
 function applySearch(term) {
   currentSearchTerm = term.trim().toLowerCase();
+  if (!currentSearchTerm) {
+    visibleCategories = []; // reset
+    applyFilters(); // reset to current idol/category filters
+    return;
+  }
 
   // Filter catalog based on current filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
     if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
-    if (!currentSearchTerm) return false; // <-- important: if search empty, show nothing
     return item.folder.toLowerCase().includes(currentSearchTerm);
   });
 
-  // Save visible categories (optional)
+  // Save the categories visible after search
   visibleCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
 
   // Update idols and categories
@@ -539,7 +544,6 @@ function applySearch(term) {
   renderCategoryButtons(visibleCategories);
   renderCatalogThumbnails();
 }
-
 
 async function loadCategoryOrder() {
   const res = await fetch(CATEGORY_ORDER_URL);
