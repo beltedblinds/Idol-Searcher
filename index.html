@@ -393,10 +393,10 @@ function applyFilters() {
   if (currentIdolFilter) {
     categoriesForButtons = [...new Set(
       catalog.filter(it => it.folder === currentIdolFilter)
-             .map(it => it.category)
+             .flatMap(it => it.categories)
              .filter(Boolean)
     )].sort();
-  } else if (visibleCategories.length) {
+  }  else if (visibleCategories.length) {
     categoriesForButtons = visibleCategories.slice(); // keep categories visible after search
   }
 
