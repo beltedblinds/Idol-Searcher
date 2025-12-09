@@ -367,18 +367,18 @@ function applyFilters() {
 
   // Determine buttons to show
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
-  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
+  let categoriesForButtons = [...new Set(catalog.flatMap(it => it.categories).filter(Boolean))].sort();
 
   // Apply asymmetric filtering
   if (firstSelection === "idol" && currentIdolFilter) {
     categoriesForButtons = [...new Set(
       catalog.filter(it => it.folder === currentIdolFilter)
-             .map(it => it.category)
+             .flatMap(it => it.categories)
              .filter(Boolean)
     )].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
     idolsForButtons = [...new Set(
-      catalog.filter(it => it.category === currentCategoryFilter)
+      catalog.filter(it => it.categories.includes(currentCategoryFilter))
              .map(it => it.folder)
     )].sort();
   }
@@ -559,7 +559,7 @@ function applySearch(term) {
   });
 
   // Save the categories visible after search
-  visibleCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+  visibleCategories = [...new Set(filteredCatalog.flatMap(it => it.categories).filter(Boolean))].sort();
 
   // Update idols and categories
   const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
@@ -583,7 +583,7 @@ async function loadCatalog() {
 
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
-  categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
+  categories = [...new Set(catalog.flatMap(it => it.categories).filter(Boolean))];
 
   renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
