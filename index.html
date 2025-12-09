@@ -277,10 +277,12 @@ function parseCatalogText(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   return lines.map(line => {
     const parts = line.split(",").map(p => p.trim());
-    return { folder: parts[0], raw: parts[1], thumb: parts[2], category: parts[3] || ""};
+    const cats = parts.slice(3).filter(Boolean); // grab all categories starting from 4th column
+    return { folder: parts[0], raw: parts[1], thumb: parts[2], categories: cats };
   }).filter(e => e.folder && e.raw && e.thumb)
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
+
 
 function getCurrentPool() { 
   return filteredCatalog; // no fallback to full catalog
@@ -291,14 +293,14 @@ function handleSearch(input) {
   const term = input.trim().toLowerCase();
   const pool = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.includes(currentCategoryFilter)) return false;
     return true;
   });
 
   if (!term) {
     filteredCatalog = pool;
     const availableIdols = [...new Set(pool.map(it => it.folder))].sort();
-    const availableCategories = [...new Set(pool.map(it => it.category).filter(Boolean))].sort();
+    const availableCategories = [...new Set(pool.flatMap(it => it.categories).filter(Boolean))].sort();
     renderIdolButtons(availableIdols);
     renderCategoryButtons(availableCategories);
     renderCatalogThumbnails();
@@ -337,7 +339,7 @@ function selectFolder(folder) {
   // Apply current filters first
   const pool = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.includes(currentCategoryFilter)) return false;
     return true;
   });
 
@@ -355,28 +357,29 @@ function applyFilters() {
   // Filter catalog based on current idol/category filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.includes(currentCategoryFilter)) return false;
     if (currentSearchTerm && !item.folder.toLowerCase().includes(currentSearchTerm)) return false;
     return true;
   });
 
   // Determine buttons to show
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
-  let categoriesForButtons = [...new Set(catalog.map(it => it.category).filter(Boolean))].sort();
+  let categoriesForButtons = [...new Set(catalog.flatMap(it => it.categories).filter(Boolean))].sort();
 
   // Apply asymmetric filtering
   if (firstSelection === "idol" && currentIdolFilter) {
     categoriesForButtons = [...new Set(
       catalog.filter(it => it.folder === currentIdolFilter)
-             .map(it => it.category)
+             .flatMap(it => it.categories)
              .filter(Boolean)
     )].sort();
   } else if (firstSelection === "category" && currentCategoryFilter) {
     idolsForButtons = [...new Set(
-      catalog.filter(it => it.category === currentCategoryFilter)
+      catalog.filter(it => it.categories.includes(currentCategoryFilter))
              .map(it => it.folder)
     )].sort();
   }
+
 
   // Apply search term only to idols
   if (currentSearchTerm) {
@@ -388,13 +391,11 @@ function applyFilters() {
   if (currentIdolFilter) {
     categoriesForButtons = [...new Set(
       catalog.filter(it => it.folder === currentIdolFilter)
-             .map(it => it.category)
+             .flatMap(it => it.categories)
              .filter(Boolean)
     )].sort();
-  } else if (visibleCategories.length) {
-    categoriesForButtons = visibleCategories.slice(); // keep categories visible after search
   }
-
+  
 
 
   renderIdolButtons(idolsForButtons);
@@ -488,7 +489,9 @@ function renderIdolButtons(list = null) {
 function renderCategoryButtons(list = null) {
   categoryPanel.innerHTML = "";
   
-  const catsSet = new Set(list || catalog.map(it => it.category).filter(Boolean));
+  const catsSet = new Set();
+  (list || catalog).forEach(it => it.categories.forEach(c => catsSet.add(c)));
+
   
   // Keep original order from categories.txt
   const cats = categoryOrder.filter(cat => catsSet.has(cat));
@@ -546,12 +549,12 @@ function applySearch(term) {
   // Filter catalog based on current filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.includes(currentCategoryFilter)) return false;
     return item.folder.toLowerCase().includes(currentSearchTerm);
   });
 
   // Save the categories visible after search
-  visibleCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
+  visibleCategories = [...new Set(filteredCatalog.flatMap(it => it.categories).filter(Boolean))].sort();
 
   // Update idols and categories
   const availableIdols = [...new Set(filteredCatalog.map(it => it.folder))].sort();
@@ -575,7 +578,7 @@ async function loadCatalog() {
 
   catalog = parseCatalogText(txt1 + "\n" + txt2);
   filteredCatalog = catalog.slice();
-  categories = [...new Set(catalog.map(it => it.category).filter(Boolean))];
+  categories = [...new Set(catalog.flatMap(it => it.categories).filter(Boolean))];
 
   renderIdolButtons([...new Set(catalog.map(it=>it.folder))]);
   renderCategoryButtons(categories);
