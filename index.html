@@ -355,10 +355,11 @@ function applyFilters() {
   // Filter catalog based on current idol/category filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(cat => cat === currentCategoryFilter)) return false;
     if (currentSearchTerm && !item.folder.toLowerCase().includes(currentSearchTerm)) return false;
     return true;
   });
+
 
   // Determine buttons to show
   let idolsForButtons = [...new Set(catalog.map(it => it.folder))].sort();
@@ -546,9 +547,10 @@ function applySearch(term) {
   // Filter catalog based on current filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(cat => cat === currentCategoryFilter)) return false;
     return item.folder.toLowerCase().includes(currentSearchTerm);
   });
+
 
   // Save the categories visible after search
   visibleCategories = [...new Set(filteredCatalog.map(it => it.category).filter(Boolean))].sort();
