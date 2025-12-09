@@ -277,7 +277,12 @@ function parseCatalogText(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   return lines.map(line => {
     const parts = line.split(",").map(p => p.trim());
-    return { folder: parts[0], raw: parts[1], thumb: parts[2], category: parts[3] || ""};
+    return { 
+      folder: parts[0], 
+      raw: parts[1], 
+      thumb: parts[2], 
+      categories: parts[3] ? parts[3].split("|").map(c => c.trim()).filter(Boolean) : [] 
+    };
   }).filter(e => e.folder && e.raw && e.thumb)
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
@@ -291,7 +296,7 @@ function handleSearch(input) {
   const term = input.trim().toLowerCase();
   const pool = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(c => c === currentCategoryFilter)) return false;
     return true;
   });
 
@@ -337,7 +342,7 @@ function selectFolder(folder) {
   // Apply current filters first
   const pool = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(c => c === currentCategoryFilter)) return false;
     return true;
   });
 
@@ -355,7 +360,7 @@ function applyFilters() {
   // Filter catalog based on current idol/category filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(c => c === currentCategoryFilter)) return false;
     if (currentSearchTerm && !item.folder.toLowerCase().includes(currentSearchTerm)) return false;
     return true;
   });
@@ -488,7 +493,10 @@ function renderIdolButtons(list = null) {
 function renderCategoryButtons(list = null) {
   categoryPanel.innerHTML = "";
   
-  const catsSet = new Set(list || catalog.map(it => it.category).filter(Boolean));
+  const catsSet = new Set(
+    list || catalog.flatMap(it => it.categories).filter(Boolean)
+  );
+
   
   // Keep original order from categories.txt
   const cats = categoryOrder.filter(cat => catsSet.has(cat));
@@ -546,7 +554,7 @@ function applySearch(term) {
   // Filter catalog based on current filters AND search term
   filteredCatalog = catalog.filter(item => {
     if (currentIdolFilter && item.folder !== currentIdolFilter) return false;
-    if (currentCategoryFilter && item.category !== currentCategoryFilter) return false;
+    if (currentCategoryFilter && !item.categories.some(c => c === currentCategoryFilter)) return false;
     return item.folder.toLowerCase().includes(currentSearchTerm);
   });
 
