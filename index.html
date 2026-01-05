@@ -277,14 +277,24 @@ const overlay = document.getElementById("overlay");
 function parseCatalogText(text) {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   return lines.map(line => {
+    // Split first by commas, but raw URLs may contain semicolons
     const parts = line.split(",").map(p => p.trim());
+
+    if (parts.length < 3) return null; // skip invalid lines
+
     const folder = parts[0];
-    const raw = parts[1];
+
+    // Raw URLs are separated by semicolons (part01;part02;part03)
+    const raw = parts[1].split(";").map(p => p.trim()).filter(Boolean);
+
     const thumb = parts[2];
-    const categories = parts.slice(3).filter(Boolean); // ALL categories as array
+
+    // Categories from part 3 onward
+    const categories = parts.slice(3).map(p => p.trim()).filter(Boolean);
+
     return { folder, raw, thumb, categories };
-  }).filter(e => e.folder && e.raw && e.thumb)
-    .sort((a,b)=>a.folder.localeCompare(b.folder));
+  }).filter(Boolean)
+    .sort((a, b) => a.folder.localeCompare(b.folder));
 }
 
 
@@ -439,37 +449,61 @@ function renderCatalogThumbnails() {
 
 
 let overlayVisible = false;
-function toggleOverlay(url) {
+let overlayInterval = null;
+
+function toggleOverlay(urls) {
+  // Clear any previous interval
+  if (overlayInterval) {
+    clearInterval(overlayInterval);
+    overlayInterval = null;
+  }
+
   if (overlayVisible) {
     overlay.style.display = "none";
     overlay.innerHTML = "";
     overlayVisible = false;
     return;
   }
-  overlay.innerHTML = "";
-  let media;
-  if (url.match(/\.(mp4|webm|mov)$/i)) {
-    media = document.createElement("video");
-    media.src = url;
-    media.autoplay = true;
-    media.loop = true;
-    media.muted = true;
-    media.controls = true;
-    media.playsInline = true;
-  } else {
-    media = document.createElement("img");
-    media.src = url;
-  }
-  overlay.appendChild(media);
+
   overlay.style.display = "flex";
+  overlay.innerHTML = "";
   overlayVisible = true;
+
+  // Ensure urls is an array
+  const mediaUrls = Array.isArray(urls) ? urls : [urls];
+
+  let index = 0;
+  const showMedia = () => {
+    overlay.innerHTML = "";
+    let mediaUrl = mediaUrls[index];
+    let media;
+
+    if (mediaUrl.match(/\.(mp4|webm|mov)$/i)) {
+      media = document.createElement("video");
+      media.src = mediaUrl;
+      media.autoplay = true;
+      media.loop = true;
+      media.muted = true;
+      media.controls = true;
+      media.playsInline = true;
+    } else {
+      media = document.createElement("img");
+      media.src = mediaUrl;
+    }
+
+    overlay.appendChild(media);
+    index = (index + 1) % mediaUrls.length;
+  };
+
+  // Show first media immediately
+  showMedia();
+
+  // If multipart, cycle every 2.5s
+  if (mediaUrls.length > 1) {
+    overlayInterval = setInterval(showMedia, 2500);
+  }
 }
 
-overlay.addEventListener("click", () => {
-  overlay.style.display = "none";
-  overlay.innerHTML = "";
-  overlayVisible = false;
-});
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
