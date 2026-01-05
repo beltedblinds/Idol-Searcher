@@ -251,6 +251,16 @@
   transition: all 0.2s ease;
 ">🔇 Sound Off</button>
 
+<input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.5" style="
+  position: fixed;
+  top: 12px;
+  right: 100px; /* space from sound button */
+  z-index: 1003;
+  width: 120px;
+  cursor: pointer;
+">
+
+
 
 <!-- Fixed panels -->
 <div id="idolButtons"></div>
@@ -280,6 +290,7 @@ let categories = [];
 let firstSelection = null; // "idol" or "category" - tracks first click for asymmetric filtering
 let currentSearchTerm = "";
 let visibleCategories = []; // stores categories currently visible in the category panel
+let globalVolume = 0.5; // default volume 50%
 
 
 const searchInput = document.getElementById("searchInput");
@@ -492,6 +503,7 @@ function showMediaPart() {
     media.autoplay = true;
     media.loop = true;
     media.muted = !soundOn; // respect global toggle
+    media.volume = globalVolume;
     media.controls = true;
     media.playsInline = true;
   } else {
@@ -700,6 +712,16 @@ soundBtn.addEventListener("click", () => {
   const video = overlay.querySelector("video");
   if (video) video.muted = !soundOn;
 });
+
+const volumeSlider = document.getElementById("volumeSlider");
+volumeSlider.value = globalVolume;
+
+volumeSlider.addEventListener("input", () => {
+  globalVolume = parseFloat(volumeSlider.value);
+  const video = overlay.querySelector("video");
+  if (video) video.volume = globalVolume;
+});
+
 
 
 loadCatalog();
