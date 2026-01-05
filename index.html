@@ -236,6 +236,22 @@
   <div id="suggestions" hidden></div>
 </div>
 
+<button id="soundToggle" title="Toggle sound" style="
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1003;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+">🔇 Sound Off</button>
+
+
 <!-- Fixed panels -->
 <div id="idolButtons"></div>
 <div id="categoryPanel"></div>
@@ -475,7 +491,7 @@ function showMediaPart() {
     media.src = url;
     media.autoplay = true;
     media.loop = true;
-    media.muted = true;
+    media.muted = !soundOn; // respect global toggle
     media.controls = true;
     media.playsInline = true;
   } else {
@@ -672,6 +688,19 @@ async function loadCatalog() {
   renderCategoryButtons(categories);
   renderCatalogThumbnails();
 }
+
+let soundOn = false; // global sound toggle
+
+const soundBtn = document.getElementById("soundToggle");
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+  // Toggle sound on overlay video if visible
+  const video = overlay.querySelector("video");
+  if (video) video.muted = !soundOn;
+});
+
 
 loadCatalog();
 </script>
