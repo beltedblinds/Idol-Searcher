@@ -279,11 +279,19 @@ function parseCatalogText(text) {
   return lines.map(line => {
     const parts = line.split(",").map(p => p.trim());
     const folder = parts[0];
-    const raw = parts[1];
+
+    let rawField = parts[1]; // could be single URL or multipart separated by ;
+    let raw = [];
+    if (rawField.includes(";")) {
+      raw = rawField.split(";").map(u => u.trim()).filter(Boolean); // multipart video URLs
+    } else {
+      raw = [rawField]; // single video or image
+    }
+
     const thumb = parts[2];
-    const categories = parts.slice(3).filter(Boolean); // ALL categories as array
+    const categories = parts.slice(3).filter(Boolean);
     return { folder, raw, thumb, categories };
-  }).filter(e => e.folder && e.raw && e.thumb)
+  }).filter(e => e.folder && e.raw.length && e.thumb)
     .sort((a,b)=>a.folder.localeCompare(b.folder));
 }
 
@@ -432,21 +440,35 @@ function renderCatalogThumbnails() {
     img.src = item.thumb || item.raw || item.url;
     img.className = "catalog-thumb";
     img.title = item.folder;
-    img.onclick = () => toggleOverlay(item.raw);
+    img.onclick = () => toggleOverlay(item);
     catalogPanel.appendChild(img);
   });
 }
 
 
 let overlayVisible = false;
-function toggleOverlay(url) {
-  if (overlayVisible) {
+let currentMediaIndex = 0;
+let currentMediaItem = null;
+
+function toggleOverlay(item) {
+  if (overlayVisible && item === currentMediaItem) {
     overlay.style.display = "none";
     overlay.innerHTML = "";
     overlayVisible = false;
+    currentMediaItem = null;
     return;
   }
+
+  currentMediaItem = item;
+  currentMediaIndex = 0;
+  showMediaPart();
+}
+
+function showMediaPart() {
   overlay.innerHTML = "";
+
+  const url = currentMediaItem.raw[currentMediaIndex];
+
   let media;
   if (url.match(/\.(mp4|webm|mov)$/i)) {
     media = document.createElement("video");
@@ -460,16 +482,76 @@ function toggleOverlay(url) {
     media = document.createElement("img");
     media.src = url;
   }
+
+  media.style.maxWidth = "90%";
+  media.style.maxHeight = "90%";
+  media.style.borderRadius = "12px";
+
   overlay.appendChild(media);
+
+  // Add navigation arrows if multiple parts
+  if (currentMediaItem.raw.length > 1) {
+    const left = document.createElement("div");
+    left.textContent = "◀";
+    left.style.position = "absolute";
+    left.style.left = "20px";
+    left.style.top = "50%";
+    left.style.transform = "translateY(-50%)";
+    left.style.fontSize = "40px";
+    left.style.cursor = "pointer";
+    left.style.userSelect = "none";
+    left.style.color = "#fff";
+    left.onclick = (e) => { e.stopPropagation(); prevPart(); };
+    overlay.appendChild(left);
+
+    const right = document.createElement("div");
+    right.textContent = "▶";
+    right.style.position = "absolute";
+    right.style.right = "20px";
+    right.style.top = "50%";
+    right.style.transform = "translateY(-50%)";
+    right.style.fontSize = "40px";
+    right.style.cursor = "pointer";
+    right.style.userSelect = "none";
+    right.style.color = "#fff";
+    right.onclick = (e) => { e.stopPropagation(); nextPart(); };
+    overlay.appendChild(right);
+
+    // Optional: show part indicator
+    const indicator = document.createElement("div");
+    indicator.textContent = `Part ${currentMediaIndex + 1} / ${currentMediaItem.raw.length}`;
+    indicator.style.position = "absolute";
+    indicator.style.bottom = "20px";
+    indicator.style.left = "50%";
+    indicator.style.transform = "translateX(-50%)";
+    indicator.style.color = "#fff";
+    indicator.style.fontSize = "16px";
+    overlay.appendChild(indicator);
+  }
+
   overlay.style.display = "flex";
   overlayVisible = true;
+}
+
+function nextPart() {
+  if (!currentMediaItem) return;
+  currentMediaIndex = (currentMediaIndex + 1) % currentMediaItem.raw.length;
+  showMediaPart();
+}
+
+function prevPart() {
+  if (!currentMediaItem) return;
+  currentMediaIndex = (currentMediaIndex - 1 + currentMediaItem.raw.length) % currentMediaItem.raw.length;
+  showMediaPart();
 }
 
 overlay.addEventListener("click", () => {
   overlay.style.display = "none";
   overlay.innerHTML = "";
   overlayVisible = false;
+  currentMediaItem = null;
 });
+
 
 function renderIdolButtons(list = null) {
   idolButtonsEl.innerHTML = "";
