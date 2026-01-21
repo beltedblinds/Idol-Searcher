@@ -277,6 +277,7 @@
 const MEDIA_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links.txt";
 const MEDIA_URL_02 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_02.txt";
 const MEDIA_URL_03 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_03.txt";
+const MEDIA_URL_04 = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/idol_gallery_links_04.txt";
 
 const CATEGORY_ORDER_URL = "https://raw.githubusercontent.com/beltedblinds/Idol-Categorizer/main/categories.txt";
 let categoryOrder = [];
@@ -687,12 +688,13 @@ async function loadCategoryOrder() {
 
 async function loadCatalog() {
   await loadCategoryOrder(); // <-- load categories.txt first
-  const [res1, res2, res3] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02), fetch(MEDIA_URL_03)]);
+  const [res1, res2, res3, res4] = await Promise.all([fetch(MEDIA_URL), fetch(MEDIA_URL_02), fetch(MEDIA_URL_03), fetch(MEDIA_URL_04)]);
   const txt1 = await res1.text();
   const txt2 = await res2.text();
   const txt3 = await res3.text();
+  const txt4 = await res4.text();
 
-  catalog = parseCatalogText(txt1 + "\n" + txt2 + "\n" + txt3);
+  catalog = parseCatalogText(txt1 + "\n" + txt2 + "\n" + txt3 + "\n" + txt4);
   filteredCatalog = catalog.slice();
   categories = [...new Set(catalog.flatMap(it => it.categories).filter(Boolean))];
 
